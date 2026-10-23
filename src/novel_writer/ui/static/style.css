@@ -1574,3 +1574,11 @@ h1 { font-size:13px; font-weight:500 }
 #workbench.chat-mode .chat-wordmark span { color:#242424 }
 :root[data-theme=light] #workbench.chat-mode .chat-wordmark { color:#d6d6d2 }
 :root[data-theme=light] #workbench.chat-mode .chat-wordmark span { color:#c9c9c4 }
+
+/* ===== 对话优先层（2026-10-24）: chat 视图收成一条干净的对话流 ===== */
+#workbench.chat-mode { --nav-width:0px; --dock-left:0px; --dock-right:0px; --divider-left:0px; --divider-right:0px }
+#workbench.chat-mode #tabs { display:none }
+#workbench.chat-mode .sidebar,
+#workbench.chat-mode .context-panel { display:none }
+#workbench.chat-mode .console-messages { display:block; margin:0 }
+#workbench.chat-mode .console-main > .chat-home { padding:12vh 0 0 }
