@@ -1,0 +1,1 @@
+{"template_format":1,"interface_version":1,"name":"只读原稿参考","description":"受控纯数据示例；运行时只读取作者指定的当前书章节。","capability":"saved-text-reference","permissions":["read_saved_source"],"parameters":{"source":"current_chapter","max_chars":1000}}

@@ -1,0 +1,1 @@
+{"template_format":1,"interface_version":1,"name":"整章改写参数","description":"仅数据默认值；连接、模型、预算和每次外发确认由作者在运行时选择。","capability":"model-request-preset","permissions":["prepare_model_request"],"parameters":{"role":"writer","temperature":0.3,"max_tokens":512,"max_output_chars":10000,"timeout_ms":30000,"prompt_version":"rewrite-1"}}

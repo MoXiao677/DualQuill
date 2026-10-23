@@ -28,3 +28,18 @@ def find(items: list, identifier: str, label: str):
         if item.id == identifier:
             return item
     raise DataValidationError(f"找不到{label}，该内容不属于当前小说")
+
+
+def structured_list(value, model, label):
+    if type(value) is not list or any(type(item) is not dict for item in value):
+        raise DataValidationError(f"{label}必须是对象列表")
+    try:
+        return [model(**item) for item in value]
+    except TypeError:
+        raise DataValidationError(f"{label}字段缺失或含未知字段") from None
+
+
+def text_list(value, label):
+    if type(value) is not list or any(type(item) is not str for item in value):
+        raise DataValidationError(f"{label}必须是文字列表")
+    return list(value)

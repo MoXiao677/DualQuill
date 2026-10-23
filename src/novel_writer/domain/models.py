@@ -3,11 +3,18 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field, fields, is_dataclass
+from dataclasses import dataclass, field, fields, is_dataclass, replace
 from datetime import datetime, timedelta, timezone
-from types import UnionType
+from functools import lru_cache
+from types import MappingProxyType, UnionType
 from typing import Any, Literal, Union, get_args, get_origin, get_type_hints
 from uuid import uuid4
+
+@lru_cache(maxsize=32)
+def _model_type_hints(model):
+    # Only immutable Python type metadata is reused. Author values, snapshot
+    # bytes, version links and timestamps are validated on every invocation.
+    return MappingProxyType(get_type_hints(model))
 
 
 ProjectStatus = Literal["planning", "writing", "completed", "archived"]
@@ -168,6 +175,11 @@ def _check_json_value(value: Any, path: str) -> None:
 
 def _check_type(value: Any, expected: Any, path: str, *, snapshot: bool = False) -> None:
     """检查声明的字段类型，尤其避免把布尔值当成章节编号。"""
+    if expected is str or expected is int or expected is float or expected is bool or expected is type(None):
+        # Same exact primitive check; avoid generic typing/dataclass reflection
+        # for every scalar in thousands of immutable entity snapshots.
+        _require(type(value) is expected, f"{path} 类型错误，应为 {expected.__name__}")
+        return
     if expected is Any:
         _check_json_value(value, path)
         return
@@ -199,13 +211,13 @@ def _check_type(value: Any, expected: Any, path: str, *, snapshot: bool = False)
         snapshot_fields = [item for item in fields(expected) if item.name != "current_version_id"]
         names = {item.name for item in snapshot_fields}
         _require(set(value) == names, f"{path} 必须包含完整的内容字段；章节快照不含 current_version_id")
-        hints = get_type_hints(expected)
+        hints = _model_type_hints(expected)
         for item in snapshot_fields:
             _check_type(value[item.name], hints[item.name], f"{path}.{item.name}", snapshot=True)
         return
     _require(type(value) is expected, f"{path} 类型错误，应为 {expected.__name__}")
     if is_dataclass(value):
-        hints = get_type_hints(expected)
+        hints = _model_type_hints(expected)
         for item in fields(value):
             field_value = getattr(value, item.name)
             field_path = f"{path}.{item.name}"
@@ -228,9 +240,47 @@ def _unique_positive_numbers(values: list[int], label: str) -> None:
     _require(len(values) == len(set(values)), f"{label}不能重复")
 
 
-def validate_document(document: NovelDocument) -> None:
+def validate_snapshot_references(version: VersionRecord, *, chapter_ids: set[str], character_ids: set[str]) -> None:
+    """检查版本首现时的外部引用；调用方必须提供可核对的整书上下文。"""
+    snapshot, kind = version.snapshot, version.entity_type
+    if kind == "book_outline":
+        _require(all(identifier in chapter_ids for volume in snapshot["volumes"] for identifier in volume["chapter_ids"]),
+                 "历史章节关联缺失或上下文不足")
+    elif kind == "character":
+        _require(all(item["target_character_id"] in character_ids for item in snapshot["relationships"]),
+                 "历史人物关联缺失或上下文不足")
+    elif kind == "chapter_outline":
+        _require(snapshot["chapter_id"] in chapter_ids, "历史细纲章节关联缺失或上下文不足")
+        _require(all(identifier in character_ids for identifier in snapshot["character_ids"]),
+                 "历史细纲人物关联缺失或上下文不足")
+        _require(all(identifier in character_ids for scene in snapshot["scenes"] for identifier in scene["character_ids"]),
+                 "历史场景人物关联缺失或上下文不足")
+
+
+def _validate_snapshot_semantics(version: VersionRecord) -> None:
+    snapshot, kind = version.snapshot, version.entity_type
+    if kind in ("project", "chapter"):
+        _require(bool(snapshot["title"].strip()), "历史快照标题不能为空")
+    if kind == "chapter":
+        _unique_positive_numbers([snapshot["number"]], "历史章节顺序")
+    elif kind == "character":
+        _require(bool(snapshot["name"].strip()), "历史快照人物姓名不能为空")
+    elif kind == "book_outline":
+        _unique_positive_numbers([item["number"] for item in snapshot["volumes"]], "历史分卷顺序")
+        assigned = [identifier for item in snapshot["volumes"] for identifier in item["chapter_ids"]]
+        _require(len(assigned) == len(set(assigned)), "历史快照中同一章节不能重复分卷")
+    elif kind == "chapter_outline":
+        _unique_positive_numbers([item["order"] for item in snapshot["scenes"]], "历史场景顺序")
+
+
+def validate_document(document: NovelDocument, *, _validated_version_ids=frozenset()) -> None:
     """校验当前数据的类型、跨对象关联和线性版本链；失败时抛出中文异常。"""
-    _check_type(document, NovelDocument, "document")
+    # The history reader may supply IDs only after matching each complete raw
+    # record's values AND scalar/container types to a previously validated one.
+    # Current entities,
+    # all membership/identity checks and every newly seen version still run.
+    typed=document if not _validated_version_ids else replace(document,versions=[v for v in document.versions if v.id not in _validated_version_ids])
+    _check_type(typed, NovelDocument, "document")
     _require(document.schema_version == 1, "不支持此 schema_version；当前只支持 1")
     _require(bool(document.project.title.strip()), "小说书名不能为空")
     project_id = document.project.id
@@ -246,6 +296,8 @@ def validate_document(document: NovelDocument) -> None:
     for item in [*project_entities, *document.versions]:
         _require(item.project_id == project_id, f"记录 {item.id} 不属于当前小说")
     for item in all_records:
+        if isinstance(item,VersionRecord) and item.id in _validated_version_ids:
+            continue
         created = _timestamp(item.created_at, f"{item.id}.created_at")
         if isinstance(item, Entity):
             updated = _timestamp(item.updated_at, f"{item.id}.updated_at")
@@ -289,8 +341,11 @@ def validate_document(document: NovelDocument) -> None:
     _require(len(version_keys) == len(set(version_keys)), "同一内容的版本号不能重复")
     for version in document.versions:
         _require(version.entity_id in targets[version.entity_type], f"版本 {version.id} 引用了不存在的内容")
+        if version.id in _validated_version_ids:
+            continue
         target = targets[version.entity_type][version.entity_id]
         _check_type(version.snapshot, type(target), f"版本 {version.id} 的快照", snapshot=True)
+        _validate_snapshot_semantics(version)
         snapshot_created = _timestamp(version.snapshot["created_at"], f"{version.id}.snapshot.created_at")
         snapshot_updated = _timestamp(version.snapshot["updated_at"], f"{version.id}.snapshot.updated_at")
         _require(snapshot_updated >= snapshot_created, "快照的更新时间不能早于创建时间")

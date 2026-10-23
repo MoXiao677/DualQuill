@@ -1,0 +1,2668 @@
+{
+  "fixture_version": 1,
+  "projects": [
+    {
+      "id": "s2-a-project-one",
+      "title": "同名虚构小说",
+      "revision": 3,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 3,
+        "document": {
+          "project": {
+            "id": "s2-a-project-one",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:05+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-one",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:03+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-2"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-one",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-one",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 2,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:03+00:00",
+                "project_id": "s2-a-project-one",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-2",
+              "created_at": "2026-10-14T00:00:03+00:00",
+              "previous_version_id": "shared-chapter-version-1",
+              "change_note": "虚构 chapter 第2版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n资料保存。",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。\n新版世界观。",
+        "writing_rules": "第三人称\n保留标点和空格  \n新版规则。"
+      },
+      "updated_at": "2026-10-14T00:00:13+00:00"
+    },
+    {
+      "id": "s2-a-project-two",
+      "title": "同名虚构小说",
+      "revision": 3,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 3,
+        "document": {
+          "project": {
+            "id": "s2-a-project-two",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:05+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-two",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:03+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-2"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-two",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-two",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 2,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:03+00:00",
+                "project_id": "s2-a-project-two",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-2",
+              "created_at": "2026-10-14T00:00:03+00:00",
+              "previous_version_id": "shared-chapter-version-1",
+              "change_note": "虚构 chapter 第2版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n资料保存。",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。\n新版世界观。",
+        "writing_rules": "第三人称\n保留标点和空格  \n新版规则。"
+      },
+      "updated_at": "2026-10-14T00:00:13+00:00"
+    }
+  ],
+  "project_snapshots": [
+    {
+      "project_id": "s2-a-project-one",
+      "revision": 1,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 1,
+        "document": {
+          "project": {
+            "id": "s2-a-project-one",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-one",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-1"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-one",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-one",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。",
+        "writing_rules": "第三人称\n保留标点和空格  "
+      },
+      "saved_at": "2026-10-14T00:00:11+00:00"
+    },
+    {
+      "project_id": "s2-a-project-one",
+      "revision": 2,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 2,
+        "document": {
+          "project": {
+            "id": "s2-a-project-one",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:03+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-one",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:03+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-2"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-one",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-one",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 2,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:03+00:00",
+                "project_id": "s2-a-project-one",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-2",
+              "created_at": "2026-10-14T00:00:03+00:00",
+              "previous_version_id": "shared-chapter-version-1",
+              "change_note": "虚构 chapter 第2版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。",
+        "writing_rules": "第三人称\n保留标点和空格  "
+      },
+      "saved_at": "2026-10-14T00:00:12+00:00"
+    },
+    {
+      "project_id": "s2-a-project-one",
+      "revision": 3,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 3,
+        "document": {
+          "project": {
+            "id": "s2-a-project-one",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:05+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-one",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:03+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-2"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-one",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-one",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-one",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-one",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-one",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 2,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:03+00:00",
+                "project_id": "s2-a-project-one",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-2",
+              "created_at": "2026-10-14T00:00:03+00:00",
+              "previous_version_id": "shared-chapter-version-1",
+              "change_note": "虚构 chapter 第2版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n资料保存。",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。\n新版世界观。",
+        "writing_rules": "第三人称\n保留标点和空格  \n新版规则。"
+      },
+      "saved_at": "2026-10-14T00:00:13+00:00"
+    },
+    {
+      "project_id": "s2-a-project-two",
+      "revision": 1,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 1,
+        "document": {
+          "project": {
+            "id": "s2-a-project-two",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-two",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-1"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-two",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-two",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。",
+        "writing_rules": "第三人称\n保留标点和空格  "
+      },
+      "saved_at": "2026-10-14T00:00:11+00:00"
+    },
+    {
+      "project_id": "s2-a-project-two",
+      "revision": 2,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 2,
+        "document": {
+          "project": {
+            "id": "s2-a-project-two",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:03+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-two",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:03+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-2"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-two",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-two",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 2,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:03+00:00",
+                "project_id": "s2-a-project-two",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-2",
+              "created_at": "2026-10-14T00:00:03+00:00",
+              "previous_version_id": "shared-chapter-version-1",
+              "change_note": "虚构 chapter 第2版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。",
+        "writing_rules": "第三人称\n保留标点和空格  "
+      },
+      "saved_at": "2026-10-14T00:00:12+00:00"
+    },
+    {
+      "project_id": "s2-a-project-two",
+      "revision": 3,
+      "payload": {
+        "workspace_version": 1,
+        "revision": 3,
+        "document": {
+          "project": {
+            "id": "s2-a-project-two",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:05+00:00",
+            "title": "同名虚构小说",
+            "author": "虚构测试作者",
+            "genre": "测试",
+            "summary": "仅作样本",
+            "language": "zh-CN",
+            "status": "writing"
+          },
+          "schema_version": 1,
+          "book_outline": {
+            "id": "shared-book-outline",
+            "created_at": "2026-10-14T00:00:00+00:00",
+            "updated_at": "2026-10-14T00:00:00+00:00",
+            "project_id": "s2-a-project-two",
+            "theme": "信任",
+            "premise": "虚构来信",
+            "main_plot": "查找日志",
+            "ending": "公开记录",
+            "key_events": [
+              "收到信",
+              "找到日志"
+            ],
+            "volumes": [
+              {
+                "number": 1,
+                "title": "第一卷",
+                "summary": "虚构分卷",
+                "chapter_ids": [
+                  "shared-chapter-1"
+                ]
+              },
+              {
+                "number": 2,
+                "title": "第二卷",
+                "summary": "另一分卷",
+                "chapter_ids": [
+                  "shared-chapter-2"
+                ]
+              }
+            ],
+            "status": "ready"
+          },
+          "chapter_outlines": [
+            {
+              "id": "shared-chapter-outline",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "chapter_id": "shared-chapter-1",
+              "core_idea": "打开信封",
+              "objective": "发现线索",
+              "character_ids": [
+                "shared-character-1"
+              ],
+              "scenes": [
+                {
+                  "order": 1,
+                  "summary": "读信",
+                  "character_ids": [
+                    "shared-character-2"
+                  ],
+                  "location": "雾港",
+                  "story_time": "虚构第一日"
+                }
+              ],
+              "story_time": "虚构清晨",
+              "status": "ready"
+            }
+          ],
+          "characters": [
+            {
+              "id": "shared-character-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "主角",
+              "personality": "谨慎",
+              "background": "虚构港口",
+              "goals": [
+                "查证",
+                "返回"
+              ],
+              "notes": "角色备注",
+              "relationships": [
+                {
+                  "target_character_id": "shared-character-2",
+                  "relation": "同伴",
+                  "description": "虚构关系"
+                }
+              ]
+            },
+            {
+              "id": "shared-character-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "name": "同名人物",
+              "role": "配角",
+              "personality": "直率",
+              "background": "虚构灯塔",
+              "goals": [
+                "保存日志"
+              ],
+              "notes": "另一备注",
+              "relationships": []
+            }
+          ],
+          "chapters": [
+            {
+              "id": "shared-chapter-1",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:03+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 1,
+              "title": "同名章节",
+              "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+              "status": "confirmed",
+              "current_version_id": "shared-chapter-version-2"
+            },
+            {
+              "id": "shared-chapter-2",
+              "created_at": "2026-10-14T00:00:00+00:00",
+              "updated_at": "2026-10-14T00:00:00+00:00",
+              "project_id": "s2-a-project-two",
+              "number": 2,
+              "title": "同名章节",
+              "content": "第二章虚构正文。",
+              "status": "draft",
+              "current_version_id": null
+            }
+          ],
+          "versions": [
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "project",
+              "entity_id": "s2-a-project-two",
+              "version_number": 1,
+              "snapshot": {
+                "id": "s2-a-project-two",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "title": "同名虚构小说",
+                "author": "虚构测试作者",
+                "genre": "测试",
+                "summary": "仅作样本",
+                "language": "zh-CN",
+                "status": "writing"
+              },
+              "id": "shared-project-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 project 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "book_outline",
+              "entity_id": "shared-book-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-book-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "theme": "信任",
+                "premise": "虚构来信",
+                "main_plot": "查找日志",
+                "ending": "公开记录",
+                "key_events": [
+                  "收到信",
+                  "找到日志"
+                ],
+                "volumes": [
+                  {
+                    "number": 1,
+                    "title": "第一卷",
+                    "summary": "虚构分卷",
+                    "chapter_ids": [
+                      "shared-chapter-1"
+                    ]
+                  },
+                  {
+                    "number": 2,
+                    "title": "第二卷",
+                    "summary": "另一分卷",
+                    "chapter_ids": [
+                      "shared-chapter-2"
+                    ]
+                  }
+                ],
+                "status": "ready"
+              },
+              "id": "shared-book_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 book_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter_outline",
+              "entity_id": "shared-chapter-outline",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-outline",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "chapter_id": "shared-chapter-1",
+                "core_idea": "打开信封",
+                "objective": "发现线索",
+                "character_ids": [
+                  "shared-character-1"
+                ],
+                "scenes": [
+                  {
+                    "order": 1,
+                    "summary": "读信",
+                    "character_ids": [
+                      "shared-character-2"
+                    ],
+                    "location": "雾港",
+                    "story_time": "虚构第一日"
+                  }
+                ],
+                "story_time": "虚构清晨",
+                "status": "ready"
+              },
+              "id": "shared-chapter_outline-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter_outline 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "character",
+              "entity_id": "shared-character-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-character-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "name": "同名人物",
+                "role": "主角",
+                "personality": "谨慎",
+                "background": "虚构港口",
+                "goals": [
+                  "查证",
+                  "返回"
+                ],
+                "notes": "角色备注",
+                "relationships": [
+                  {
+                    "target_character_id": "shared-character-2",
+                    "relation": "同伴",
+                    "description": "虚构关系"
+                  }
+                ]
+              },
+              "id": "shared-character-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 character 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 1,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:00+00:00",
+                "project_id": "s2-a-project-two",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-1",
+              "created_at": "2026-10-14T00:00:02+00:00",
+              "previous_version_id": null,
+              "change_note": "虚构 chapter 第1版",
+              "source": "manual"
+            },
+            {
+              "project_id": "s2-a-project-two",
+              "entity_type": "chapter",
+              "entity_id": "shared-chapter-1",
+              "version_number": 2,
+              "snapshot": {
+                "id": "shared-chapter-1",
+                "created_at": "2026-10-14T00:00:00+00:00",
+                "updated_at": "2026-10-14T00:00:03+00:00",
+                "project_id": "s2-a-project-two",
+                "number": 1,
+                "title": "同名章节",
+                "content": "\n\n虚构中文正文🙂。旧ID文本 shared-chapter-1 保持原样。\r\n尾空格  \n\n第二版。",
+                "status": "confirmed"
+              },
+              "id": "shared-chapter-version-2",
+              "created_at": "2026-10-14T00:00:03+00:00",
+              "previous_version_id": "shared-chapter-version-1",
+              "change_note": "虚构 chapter 第2版",
+              "source": "manual"
+            }
+          ]
+        },
+        "ideas": {
+          "shared-chapter-1": "\nIDEA 原文  \n资料保存。",
+          "shared-chapter-2": "另一灵感"
+        },
+        "worldbuilding": "﻿虚构世界观\r\n灯塔与组织。\n新版世界观。",
+        "writing_rules": "第三人称\n保留标点和空格  \n新版规则。"
+      },
+      "saved_at": "2026-10-14T00:00:13+00:00"
+    }
+  ],
+  "skills": [
+    {
+      "id": "s2-a-skill-1",
+      "name": "同名虚构技能",
+      "description": "独立记录",
+      "imported_at": "2026-10-14T00:00:00+00:00",
+      "primary_path": "教材/SKILL.md",
+      "files_json": [
+        {
+          "path": "教材/notes/例子.md",
+          "content": "\n原文包含 shared-character-1。\r\n末尾空格  "
+        },
+        {
+          "path": "教材/SKILL.md",
+          "content": "﻿---\r\nname: 同名虚构技能\r\ndescription: 样本\r\n---\r\n\r\n# 原文\r\n"
+        }
+      ]
+    },
+    {
+      "id": "s2-a-skill-2",
+      "name": "同名虚构技能",
+      "description": "独立记录",
+      "imported_at": "2026-10-14T00:00:00+00:00",
+      "primary_path": "教材/SKILL.md",
+      "files_json": [
+        {
+          "path": "教材/notes/例子.md",
+          "content": "\n原文包含 shared-character-1。\r\n末尾空格  "
+        },
+        {
+          "path": "教材/SKILL.md",
+          "content": "﻿---\r\nname: 同名虚构技能\r\ndescription: 样本\r\n---\r\n\r\n# 原文\r\n"
+        }
+      ]
+    },
+    {
+      "id": "s2-a-skill-3",
+      "name": "同名虚构技能",
+      "description": "独立记录",
+      "imported_at": "2026-10-14T00:00:00+00:00",
+      "primary_path": "教材/SKILL.md",
+      "files_json": [
+        {
+          "path": "教材/notes/例子.md",
+          "content": "\n原文包含 shared-character-1。\r\n末尾空格  另一独立资料。"
+        },
+        {
+          "path": "教材/SKILL.md",
+          "content": "﻿---\r\nname: 同名虚构技能\r\ndescription: 样本\r\n---\r\n\r\n# 原文\r\n"
+        }
+      ]
+    }
+  ]
+}

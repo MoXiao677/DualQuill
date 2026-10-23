@@ -1,0 +1,31 @@
+AI-Novel-Writer desktop 0.4.14
+
+Application: MIT License. Copyright (c) 2026 AI-Novel-Writer Contributors.
+The complete application license is distributed as resources/LICENSE.application.txt.
+The private package field controls npm publication; release approval is separate.
+
+Runtime components:
+- Electron 44.7.2: MIT. The distribution contains LICENSE.electron.txt (or
+  LICENSE) and LICENSES.chromium.html with Chromium and bundled component notices.
+  Source: https://github.com/electron/electron
+- CPython 3.14.8 Windows x64 embeddable: Python Software Foundation License
+  Version 2 and incorporated component licenses. Full text: runtime/LICENSE.txt.
+  Source: https://www.python.org/downloads/release/python-3148/
+  The official public distribution is bundled, not any Codex private runtime.
+
+Build tooling (not required on the author's machine):
+- electron-builder 26.15.3: MIT.
+  Source: https://github.com/electron-userland/electron-builder
+- npm transitive tool licenses remain in desktop/node_modules and are not
+  application runtime dependencies. Versions and SHA-512 are in package-lock.json.
+  Generated resources/dependency-inventory.json preserves their declared versions,
+  origins, integrity values and license identifiers. This inventory is metadata,
+  not approval for public redistribution or a replacement for full license texts.
+
+Binary SHA-256 locks, public original URLs and independent official checksum
+provenance are in desktop/inputs.json in the source distribution. Downloading
+from a public mirror does not replace the independent official hash check.
+
+This build is unsigned. Automatic update, certificate discovery and publication
+are not enabled. No author novel, credentials, database, test fixture or private
+log is included by the application resource allowlist.

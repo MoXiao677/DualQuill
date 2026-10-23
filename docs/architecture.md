@@ -1,5 +1,9 @@
 # 模块化架构
 
+2026-10-15当前变更：新增全历史迁移/复制、旧JSON、Skills冲突与库外操作收据，沿用三表；专项通过但完整core失败，待独立Astra收口。详见根目录[架构](../ARCHITECTURE.md)与[S2-C交付](s2-c-migration.md)，下方v0.2说明保留历史。
+
+> 本文保留 v0.2 架构的实现说明。2026-10-13 接管后的正式架构现状、专业工作台改造和长期演进方案见根目录 [ARCHITECTURE.md](../ARCHITECTURE.md)，功能范围见 [PRODUCT_REQUIREMENTS.md](../PRODUCT_REQUIREMENTS.md)。下文“后续扩展”为当时建议，当前顺序以 [ROADMAP.md](../ROADMAP.md) 为准。
+
 v0.2 采用 Python 标准库、SQLite 和原生 HTML/CSS/JavaScript 本地界面。对初学者而言，只需要启动一个入口，不用安装前后端框架、数据库服务或模型 SDK。业务、界面和存储独立，后续可替换界面或增加模型适配器。
 
 ## 模块职责

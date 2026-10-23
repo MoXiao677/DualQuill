@@ -1,0 +1,19 @@
+[
+  {
+    "name": "electron",
+    "version": "44.7.2",
+    "file": "electron-v44.7.2-win32-x64.zip",
+    "sha256": "10a89447ef64ac5cb9f782af48ffd83734a40ae91681259d1048ca3c9e6c5da4",
+    "url": "https://github.com/electron/electron/releases/download/v44.7.2/electron-v44.7.2-win32-x64.zip",
+    "source": "official npm electron44.7.2/checksums.json",
+    "download": "https://cdn.npmmirror.com/binaries/electron/44.7.2/electron-v44.7.2-win32-x64.zip"
+  },
+  {
+    "name": "python",
+    "version": "3.14.8",
+    "file": "python-3.14.8-embed-amd64.zip",
+    "sha256": "a93abe456ab01bd96d7a085b3cdb6566b3063f4241360d114142fbdb07f0a310",
+    "url": "https://www.python.org/ftp/python/3.14.8/python-3.14.8-embed-amd64.zip",
+    "source": "https://www.python.org/downloads/release/python-3148/"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "workflow_format": 1,
+  "interface_version": 1,
+  "name": "IDEA→细纲→初稿→候选模型意见→改写→人工采纳",
+  "permissions": ["apply_approved_change", "human_approval", "prepare_model_request", "read_saved_source"],
+  "nodes": [
+    {"id":"read","kind":"reference","parents":[],"source":null,"role":null,"parameters":{"max_chars":20000},"when":null},
+    {"id":"idea","kind":"model_idea","parents":["read"],"source":"read","role":"writer","parameters":{"context_budget":4000,"max_output_chars":10000,"timeout_ms":30000},"when":null},
+    {"id":"outline","kind":"model_outline","parents":["idea"],"source":"idea","role":"writer","parameters":{"context_budget":4000,"max_output_chars":10000,"timeout_ms":30000},"when":null},
+    {"id":"draft","kind":"model_draft","parents":["outline"],"source":"outline","role":"writer","parameters":{"context_budget":4000,"max_output_chars":10000,"timeout_ms":30000},"when":null},
+    {"id":"audit","kind":"model_candidate_audit","parents":["draft"],"source":"draft","role":"auditor","parameters":{"context_budget":4000,"max_output_chars":10000,"timeout_ms":30000},"when":null},
+    {"id":"rewrite","kind":"model_rewrite","parents":["audit"],"source":"audit","role":"writer","parameters":{"context_budget":4000,"max_output_chars":10000,"timeout_ms":30000},"when":null},
+    {"id":"human","kind":"human","parents":["rewrite"],"source":"rewrite","role":null,"parameters":{"action":"body"},"when":null},
+    {"id":"apply","kind":"apply","parents":["human"],"source":"human","role":null,"parameters":{"action":"body"},"when":null}
+  ]
+}

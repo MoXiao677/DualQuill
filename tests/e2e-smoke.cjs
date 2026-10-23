@@ -14,7 +14,7 @@ const oldText = '\n\n旧版正文。\n\n中文换行保留。';
 let server, browser;
 
 async function startServer() {
-  const source = "import sys; sys.path.insert(0, 'src'); from novel_writer.ui.server import create_server; s=create_server(sys.argv[1], port=0); print('http://127.0.0.1:'+str(s.server_address[1]), flush=True); s.serve_forever()";
+  const source = "import sys; sys.path.insert(0, 'src'); from novel_writer.ui.server import create_server; s=create_server(sys.argv[1], port=0, offline=True); print('http://127.0.0.1:'+str(s.server_address[1]), flush=True); s.serve_forever()";
   server = spawn(python, ['-X', 'utf8', '-u', '-c', source, database], { cwd: root, windowsHide: true });
   return new Promise((resolve, reject) => {
     let output = '';
@@ -37,6 +37,11 @@ async function stopServer() {
 async function saved(page) {
   await page.waitForFunction(() => document.querySelector('#save-state').textContent.startsWith('已保存'));
 }
+async function modulePage(page,name) {
+  const button=page.locator('#tabs').getByRole('button',{name,exact:true,includeHidden:true});
+  if(!await button.isVisible())await page.locator('#toggle-modules').click();
+  await button.click();
+}
 
 (async () => {
   let url = await startServer();
@@ -45,6 +50,7 @@ async function saved(page) {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(url);
+  await page.getByRole('button',{name:'切换导航面板',exact:true}).click();
   await page.getByRole('button', { name: '＋ 创建小说', exact: true }).click();
   await page.getByLabel('小说名称', { exact: true }).fill('浏览器验收小说');
   await page.getByRole('button', { name: '创建', exact: true }).click();
@@ -65,11 +71,12 @@ async function saved(page) {
   await saved(page);
   assert.equal(await page.getByLabel('正文', { exact: true }).inputValue(), oldText, '保存重绘必须保留开头的空行');
   await page.reload();
-  await page.getByRole('button', { name: '章节写作', exact: true }).click();
+  await modulePage(page,'章节写作');
   assert.equal(await page.getByLabel('正文', { exact: true }).inputValue(), oldText);
   await page.getByLabel('正文', { exact: true }).fill('新的正文。');
   await page.getByRole('button', { name: '保存正文', exact: true }).click();
   await saved(page);
+  if(!await page.locator('#right-panel').isVisible()) await page.getByRole('button',{name:'切换上下文面板',exact:true}).click();
   await page.getByLabel('历史版本', { exact: true }).selectOption({ index: 1 });
   assert.match(await page.locator('#version-preview').textContent(), /旧版正文/);
   page.once('dialog', dialog => dialog.accept());
@@ -81,7 +88,7 @@ async function saved(page) {
   await stopServer();
   url = await startServer();
   await page.goto(url);
-  await page.getByRole('button', { name: '章节写作', exact: true }).click();
+  await modulePage(page,'章节写作');
   assert.equal(await page.getByLabel('正文', { exact: true }).inputValue(), oldText);
   await page.getByRole('button', { name: '人物设定', exact: true }).click();
   await page.getByRole('button', { name: '＋ 新建人物', exact: true }).click();
@@ -101,7 +108,7 @@ async function saved(page) {
   assert.equal(await page.getByLabel('技能原文', { exact: true }).inputValue(), original);
   assert.equal(await page.evaluate(() => window.untrustedSkillExecuted), undefined);
   await page.reload();
-  await page.getByRole('button', { name: 'Skills', exact: true }).click();
+  await modulePage(page,'Skills');
   assert.equal(await page.getByLabel('技能原文', { exact: true }).inputValue(), original);
   await page.getByRole('button', { name: '使用指南', exact: true }).click();
   await page.getByRole('heading', { name: '小说作者：第一次使用', exact: true }).waitFor();

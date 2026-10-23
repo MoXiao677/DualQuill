@@ -29,3 +29,7 @@ backups/
 .idea/
 .DS_Store
 Thumbs.db
+
+# S7 project-local dependencies and disposable build inputs
+desktop/node_modules/
+desktop/.cache/

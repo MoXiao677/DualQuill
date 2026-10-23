@@ -1,0 +1,138 @@
+{
+  "format": "ai-novel-writer-backup",
+  "backup_format_version": 1,
+  "backup_id": "84c59fa9-ab19-462d-8f9e-8f7b31867879",
+  "created_at": "2026-10-14T00:10:02+00:00",
+  "capture": {
+    "started_at": "2026-10-14T00:10:00+00:00",
+    "finished_at": "2026-10-14T00:10:01+00:00"
+  },
+  "producer": {
+    "application_version": "0.2.0",
+    "git_revision": "0a84f89d4cb65eab5867819022839f32eff554f9",
+    "working_tree_modified": true
+  },
+  "scope": {
+    "mode": "full_library",
+    "project_ids": [
+      "s2-a-project-one",
+      "s2-a-project-two"
+    ],
+    "skills": {
+      "mode": "all",
+      "ids": [
+        "s2-a-skill-1",
+        "s2-a-skill-2",
+        "s2-a-skill-3"
+      ]
+    },
+    "browser_preferences": "excluded"
+  },
+  "database": {
+    "schema_profile": "novel-writer/sqlite-1",
+    "sqlite_user_version": 1,
+    "workspace_version": 1,
+    "document_schema_version": 1,
+    "schema_sha256": "babc3a8d5fe36b6cca4af8b639db17529f5d3d6e2b2711a9623e31f281948bf2",
+    "tables": [
+      {
+        "name": "project_snapshots",
+        "columns": [
+          "project_id",
+          "revision",
+          "payload",
+          "saved_at"
+        ],
+        "rows": 6
+      },
+      {
+        "name": "projects",
+        "columns": [
+          "id",
+          "title",
+          "revision",
+          "payload",
+          "updated_at"
+        ],
+        "rows": 2
+      },
+      {
+        "name": "skills",
+        "columns": [
+          "id",
+          "name",
+          "description",
+          "imported_at",
+          "primary_path",
+          "files_json"
+        ],
+        "rows": 3
+      }
+    ],
+    "indexes": [
+      "sqlite_autoindex_project_snapshots_1",
+      "sqlite_autoindex_projects_1",
+      "sqlite_autoindex_skills_1"
+    ],
+    "triggers": [
+      "snapshots_no_delete",
+      "snapshots_no_replace",
+      "snapshots_no_update"
+    ],
+    "foreign_keys": [
+      {
+        "table": "project_snapshots",
+        "definition": [
+          0,
+          0,
+          "projects",
+          "project_id",
+          "id",
+          "NO ACTION",
+          "NO ACTION",
+          "NONE"
+        ]
+      }
+    ]
+  },
+  "counts": {
+    "projects": [
+      {
+        "project_id": "s2-a-project-one",
+        "revision": 3,
+        "chapters": 2,
+        "characters": 2,
+        "chapter_outlines": 1,
+        "entity_versions": 6,
+        "project_snapshots": 3
+      },
+      {
+        "project_id": "s2-a-project-two",
+        "revision": 3,
+        "chapters": 2,
+        "characters": 2,
+        "chapter_outlines": 1,
+        "entity_versions": 6,
+        "project_snapshots": 3
+      }
+    ],
+    "skills": 3
+  },
+  "entries": [
+    {
+      "path": "snapshot.sqlite3",
+      "bytes": 94208,
+      "sha256": "0d0d8c0737c1978746abed9a08da27d89bf880e2db78d0ddd664fc7d745aebe3"
+    }
+  ],
+  "exclusions": [
+    "provider_configuration_and_credentials",
+    "environment_variables",
+    "session_tokens",
+    "browser_session_selection",
+    "in_memory_drafts",
+    "unsent_requests",
+    "in_memory_activity",
+    "program_files_and_executable_extensions"
+  ]
+}

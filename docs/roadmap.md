@@ -1,5 +1,9 @@
 # 分阶段开发计划
 
+2026-10-15状态：S2-A/B已有交付，C已实现迁移/复制及旧JSON入口，专项与受影响界面通过，完整core未过/作者未验收，停止于3次修复上限待领导安排独立Astra。D/S3未开始。[当前C证据](s2-c-migration.md)。下方旧阶段说明保留历史。
+
+> 本文保留项目骨架和 v0.2 离线版本的历史开发阶段。2026-10-13 后续开发采用根目录 [ROADMAP.md](../ROADMAP.md) 的 S1–S7；完整需求见 [PRODUCT_REQUIREMENTS.md](../PRODUCT_REQUIREMENTS.md)，任务见 [TASKS.md](../TASKS.md)。历史编号不等同于新的 S1–S7；S1 及追加对话 UI 已实现，最新证据见 [对话工作台记录](chat-workbench.md)，S2–S7 未实施。
+
 ## 第一阶段：建立基础
 
 已完成模块目录、数据结构、JSON 示例与读取校验、基础测试和中文文档。

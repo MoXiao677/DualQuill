@@ -1,0 +1,307 @@
+{
+  "user_version": 1,
+  "tables": {
+    "project_snapshots": {
+      "ddl": "CREATE TABLE project_snapshots (\n                    project_id TEXT NOT NULL REFERENCES projects(id), revision INTEGER NOT NULL,\n                    payload TEXT NOT NULL, saved_at TEXT NOT NULL,\n                    PRIMARY KEY (project_id, revision)\n                )",
+      "columns": [
+        [
+          0,
+          "project_id",
+          "TEXT",
+          1,
+          null,
+          1,
+          0
+        ],
+        [
+          1,
+          "revision",
+          "INTEGER",
+          1,
+          null,
+          2,
+          0
+        ],
+        [
+          2,
+          "payload",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          3,
+          "saved_at",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ]
+      ],
+      "foreign_keys": [
+        [
+          0,
+          0,
+          "projects",
+          "project_id",
+          "id",
+          "NO ACTION",
+          "NO ACTION",
+          "NONE"
+        ]
+      ],
+      "indexes": [
+        {
+          "definition": [
+            0,
+            "sqlite_autoindex_project_snapshots_1",
+            1,
+            "pk",
+            0
+          ],
+          "columns": [
+            [
+              0,
+              0,
+              "project_id",
+              0,
+              "BINARY",
+              1
+            ],
+            [
+              1,
+              1,
+              "revision",
+              0,
+              "BINARY",
+              1
+            ],
+            [
+              2,
+              -1,
+              null,
+              0,
+              "BINARY",
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "projects": {
+      "ddl": "CREATE TABLE projects (\n                    id TEXT PRIMARY KEY, title TEXT NOT NULL, revision INTEGER NOT NULL,\n                    payload TEXT NOT NULL, updated_at TEXT NOT NULL\n                )",
+      "columns": [
+        [
+          0,
+          "id",
+          "TEXT",
+          0,
+          null,
+          1,
+          0
+        ],
+        [
+          1,
+          "title",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          2,
+          "revision",
+          "INTEGER",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          3,
+          "payload",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          4,
+          "updated_at",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ]
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "definition": [
+            0,
+            "sqlite_autoindex_projects_1",
+            1,
+            "pk",
+            0
+          ],
+          "columns": [
+            [
+              0,
+              0,
+              "id",
+              0,
+              "BINARY",
+              1
+            ],
+            [
+              1,
+              -1,
+              null,
+              0,
+              "BINARY",
+              0
+            ]
+          ]
+        }
+      ]
+    },
+    "skills": {
+      "ddl": "CREATE TABLE skills (id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL, imported_at TEXT NOT NULL, primary_path TEXT NOT NULL, files_json TEXT NOT NULL)",
+      "columns": [
+        [
+          0,
+          "id",
+          "TEXT",
+          0,
+          null,
+          1,
+          0
+        ],
+        [
+          1,
+          "name",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          2,
+          "description",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          3,
+          "imported_at",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          4,
+          "primary_path",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ],
+        [
+          5,
+          "files_json",
+          "TEXT",
+          1,
+          null,
+          0,
+          0
+        ]
+      ],
+      "foreign_keys": [],
+      "indexes": [
+        {
+          "definition": [
+            0,
+            "sqlite_autoindex_skills_1",
+            1,
+            "pk",
+            0
+          ],
+          "columns": [
+            [
+              0,
+              0,
+              "id",
+              0,
+              "BINARY",
+              1
+            ],
+            [
+              1,
+              -1,
+              null,
+              0,
+              "BINARY",
+              0
+            ]
+          ]
+        }
+      ]
+    }
+  },
+  "triggers": {
+    "snapshots_no_delete": "CREATE TRIGGER snapshots_no_delete\n                    BEFORE DELETE ON project_snapshots BEGIN\n                    SELECT RAISE(ABORT, '历史快照不可删除'); END",
+    "snapshots_no_replace": "CREATE TRIGGER snapshots_no_replace\n                    BEFORE INSERT ON project_snapshots\n                    WHEN EXISTS (SELECT 1 FROM project_snapshots\n                        WHERE project_id = NEW.project_id AND revision = NEW.revision) BEGIN\n                    SELECT RAISE(ABORT, '历史快照不可替换'); END",
+    "snapshots_no_update": "CREATE TRIGGER snapshots_no_update\n                    BEFORE UPDATE ON project_snapshots BEGIN\n                    SELECT RAISE(ABORT, '历史快照不可改写'); END"
+  },
+  "objects": [
+    {
+      "type": "index",
+      "name": "sqlite_autoindex_project_snapshots_1"
+    },
+    {
+      "type": "index",
+      "name": "sqlite_autoindex_projects_1"
+    },
+    {
+      "type": "index",
+      "name": "sqlite_autoindex_skills_1"
+    },
+    {
+      "type": "table",
+      "name": "project_snapshots"
+    },
+    {
+      "type": "table",
+      "name": "projects"
+    },
+    {
+      "type": "table",
+      "name": "skills"
+    },
+    {
+      "type": "trigger",
+      "name": "snapshots_no_delete"
+    },
+    {
+      "type": "trigger",
+      "name": "snapshots_no_replace"
+    },
+    {
+      "type": "trigger",
+      "name": "snapshots_no_update"
+    }
+  ]
+}

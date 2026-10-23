@@ -1,0 +1,201 @@
+// Conversation shell acceptance uses only fictional data and a temporary server.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { spawn } = require('node:child_process');
+const { chromium } = require('playwright');
+const root = path.resolve(__dirname, '..');
+const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'novel-chat-ui-'));
+const artifacts = path.resolve(process.env.NOVEL_WRITER_ARTIFACTS || path.join(os.tmpdir(), 'novel-chat-artifacts-' + Date.now()));
+assert.ok(!artifacts.startsWith(root + path.sep), 'Screenshots must stay outside repository');
+fs.mkdirSync(artifacts, { recursive: true });
+let server, browser, page;
+const report = { status: 'running', checks: [], layouts: [] };
+async function start() {
+  server = spawn(process.env.NOVEL_WRITER_PYTHON || 'python', ['-B', '-X', 'utf8', '-u', '-c', "import sys; sys.path.insert(0,'src'); from novel_writer.ui.server import create_server; s=create_server(sys.argv[1],port=0); print('http://127.0.0.1:'+str(s.server_address[1]),flush=True); s.serve_forever()", path.join(temporary,'fictional.sqlite3')], { cwd: root, windowsHide: true });
+  return new Promise((resolve,reject)=>{
+    let output=''; const timeout=setTimeout(()=>reject(new Error('Server startup timeout')),10000);
+    server.once('error',error=>{clearTimeout(timeout);reject(error);});
+    server.stdout.on('data',chunk=>{output+=chunk;const match=output.match(/http:\/\/127[.]0[.]0[.]1:[0-9]+/);if(match){clearTimeout(timeout);resolve(match[0]);}});
+    server.stderr.on('data',chunk=>process.stderr.write(chunk));
+  });
+}
+async function click(name) {
+  await page.waitForFunction(()=>!document.querySelector('#toggle-modules').disabled);
+  const module=page.locator('#tabs').getByRole('button',{name,exact:true,includeHidden:true});
+  if(await module.count()&&!await module.isVisible())await page.locator('#toggle-modules').click();
+  await page.getByRole('button',{name,exact:true}).click();
+}
+async function saved() { await page.waitForFunction(()=>document.querySelector('#save-state').textContent.startsWith('已保存')); }
+async function create(kind,label,value) {
+  await click(kind);await page.locator('#create-dialog').getByLabel(label,{exact:true}).fill(value);await click('创建');await saved();
+}
+async function openLibrary() { if(!await page.locator('#left-panel').isVisible()) await click('切换导航面板'); }
+async function unobscured(locator) {
+  return locator.evaluate(el=>{const r=el.getBoundingClientRect();const x=r.left+r.width/2,y=r.top+r.height/2;const hit=document.elementFromPoint(x,y);return r.width>0&&r.height>0&&r.bottom<=innerHeight&&r.right<=innerWidth&&!!hit&&(el===hit||el.contains(hit));});
+}
+(async()=>{
+  const url=await start();
+  browser=await chromium.launch({headless:true,...(process.env.NOVEL_WRITER_BROWSER?{executablePath:process.env.NOVEL_WRITER_BROWSER}:{})});
+  page=await browser.newPage({viewport:{width:1440,height:900}});
+  page.setDefaultTimeout(10000);
+  const errors=[],external=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(url))external.push(r.url());});
+  await page.goto(url);await page.waitForFunction(()=>!document.querySelector('#new-project').disabled);
+  if(process.env.NOVEL_CHAT_BASELINE){
+    await create('＋ 创建小说','小说名称','雾港来信 · UI 验收虚构小说');
+    await click('章节写作');await create('＋ 新建章节','章节标题','第一章 旧灯塔');
+    await page.getByLabel('正文',{exact:true}).fill('雾停在港口。林舟推开旧灯塔的门，发现桌上多了一封没有署名的信。\n\n信封里只有一句话：今晚，不要点灯。');await click('保存正文');await saved();
+    await page.screenshot({path:path.join(artifacts,'chat-before-editor.png')});
+    await page.reload();await saved();await page.screenshot({path:path.join(artifacts,'chat-before-home.png')});
+    report.status='baseline-captured';return;
+  }
+  assert.equal(await page.locator('#chat-composer').isVisible(),true,'First screen must be conversation home');
+  assert.equal(await page.getByRole('button',{name:'查看工作台状态',exact:true}).count(),1,'A small status control must expose actual workspace state');
+  await click('查看工作台状态');
+  assert.equal(await page.locator('#workbench-status').isVisible(),true);
+  assert.match(await page.locator('#workbench-status').textContent(),/未绑定小说.*模型未启用.*暂无用量统计/s);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#workbench-status').isVisible(),false);
+  assert.equal(await page.locator('#document-tabs').isVisible(),false,'Conversation home must not show the manual document strip');
+  assert.equal(await page.locator('#tabs').isVisible(),false,'Home modules must be tucked away by default');
+  assert.equal(await page.locator('#left-panel').isVisible(),false,'Home must not expand project tree');
+  assert.equal(await page.locator('#right-panel').isVisible(),false,'Home must not expand context panels');
+  assert.equal(await page.evaluate(()=>getComputedStyle(document.body).backgroundColor),'rgb(8, 8, 8)');
+  assert.equal(await page.locator('#chat-send').isDisabled(),true);
+  assert.equal(await page.locator('#chat-stop').isDisabled(),true);
+  await click('活动 / 控制台');assert.equal(await page.locator('#bottom-panel').isVisible(),true,'Home activity entry must have a visible effect');
+  await click('关闭任务区');
+  await page.getByLabel('创作需求',{exact:true}).fill('没有项目的临时构思');
+  await openLibrary();await create('＋ 创建小说','小说名称','雾港来信 · UI 验收虚构小说');
+  await click('章节写作');await create('＋ 新建章节','章节标题','第一章 旧灯塔');
+  const body='雾停在港口。林舟推开旧灯塔的门，发现桌上多了一封没有署名的信。\n\n信封里只有一句话：今晚，不要点灯。';
+  await page.getByLabel('正文',{exact:true}).fill(body);await click('保存正文');await saved();
+  await page.screenshot({path:path.join(artifacts,'chat-after-editor.png')});
+  await click('人物设定');await create('＋ 新建人物','人物姓名','林舟（虚构）');
+  await click('世界观');await page.getByLabel('世界观与设定',{exact:true}).fill('雾港，旧灯塔');await page.keyboard.press('Control+s');await saved();
+  await click('创作对话');
+  assert.equal(await page.locator('#document-tabs').isVisible(),false,'Visited project, chapter, character and world tabs must stay inside modules');
+  assert.match(await page.locator('#book-title').textContent(),/^创作对话 · 雾港来信/);
+  await click('查看工作台状态');
+  assert.match(await page.locator('#overview-project').textContent(),/雾港来信/);
+  assert.equal(await page.locator('#overview-chapters').textContent(),'1 章 · 1 位人物');
+  await page.keyboard.press('Escape');
+  await click('查看本窗口活动');assert.equal(await page.locator('#bottom-panel').isVisible(),true);await click('关闭任务区');
+  assert.equal(await page.getByLabel('创作需求',{exact:true}).inputValue(),'','New project must not inherit unbound prompt');
+  await click('查看未绑定需求');assert.equal(await page.getByLabel('创作需求',{exact:true}).inputValue(),'没有项目的临时构思');
+  assert.equal(await page.getByRole('button',{name:'添加上下文',exact:true}).isDisabled(),true,'Unbound prompt must not borrow current project context');
+  page.once('dialog',dialog=>dialog.dismiss());await click('清空当前需求');assert.equal(await page.getByLabel('创作需求',{exact:true}).inputValue(),'没有项目的临时构思');
+  page.once('dialog',dialog=>dialog.accept());await click('清空当前需求');assert.equal(await page.getByLabel('创作需求',{exact:true}).inputValue(),'');
+  await click('返回当前小说需求');
+  const project=(await (await page.request.get(url+'/api/projects')).json())[0];
+  const before=await (await page.request.get(url+'/api/projects/'+project.id)).json();
+  const request='请让林舟发现信件的来历。\n保持克制的叙述，不要改写正式稿。';
+  await page.getByLabel('创作需求',{exact:true}).fill(request);
+  await click('添加上下文');
+  await page.getByLabel('绑定章节',{exact:true}).selectOption({label:'第一章 旧灯塔'});
+  await page.getByLabel('绑定人物',{exact:true}).selectOption({label:'林舟（虚构）'});
+  await page.getByLabel('包含已保存世界观',{exact:true}).check();
+  await click('确认上下文');
+  assert.match(await page.locator('#chat-context-summary').textContent(),/旧灯塔.*林舟.*世界观/s);
+  await page.keyboard.press('Control+End');await page.keyboard.press('Enter');assert.match(await page.getByLabel('创作需求',{exact:true}).inputValue(),/\n$/);
+  await page.keyboard.press('Control+Enter');
+  assert.equal(await page.locator('#chat-send').isDisabled(),true);
+  assert.equal(await page.locator('[data-chat-message]').count(),0,'No fabricated conversation');
+  await click('章节写作');await page.getByLabel('正文',{exact:true}).fill(body+'\n未保存的手动修改。');
+  await click('创作对话');assert.equal(await page.getByLabel('创作需求',{exact:true}).inputValue(),request+'\n');
+  await click('章节写作');assert.match(await page.getByLabel('正文',{exact:true}).inputValue(),/未保存的手动修改/);
+  assert.equal(await page.locator('#document-tabs [data-open-tab]').count(),1,'Writing module exposes only its actual chapter documents, without empty placeholders');
+  assert.ok(!(await page.locator('#document-tabs').textContent()).includes('雾港来信'),'Document tabs must not repeat the project name');
+  await page.keyboard.press('Control+s');await saved();await click('创作对话');
+  assert.match(await page.locator('#chat-context-summary').textContent(),/更新.*复核/);
+  await openLibrary();await create('＋ 创建小说','小说名称','另一部虚构小说');await click('创作对话');
+  assert.equal(await page.getByLabel('创作需求',{exact:true}).inputValue(),'');
+  await page.getByLabel('创作需求',{exact:true}).fill('第二部故事的独立请求');
+  await openLibrary();await page.locator('#project-list button').filter({hasText:project.title}).click();await click('创作对话');
+  assert.equal(await page.getByLabel('创作需求',{exact:true}).inputValue(),request+'\n');
+  assert.match(await page.locator('#chat-context-summary').textContent(),/林舟/);
+  const after=await (await page.request.get(url+'/api/projects/'+project.id)).json();
+  assert.equal(after.revision,before.revision+1,'Only explicit manual save changes revision');
+  assert.equal(after.document.versions.length,before.document.versions.length+1);
+  await click('模型配置入口');
+  for(const label of ['API Base URL','API Key','模型 ID']) assert.equal(await page.getByLabel(label,{exact:true}).first().isDisabled(),false);
+  assert.equal(await page.getByRole('button',{name:'测试连接',exact:true}).first().isDisabled(),true);
+  assert.match(await page.locator('#content').textContent(),/Windows 账户加密保存/);
+  await click('创作对话');
+  await page.keyboard.press('Control+k');await page.getByLabel('搜索命令',{exact:true}).fill('创作对话');await page.keyboard.press('Enter');
+  assert.equal(await page.getByLabel('创作需求',{exact:true}).evaluate(el=>el===document.activeElement),true);
+  assert.equal(await page.locator('#tabs').isVisible(),false);
+  await click('展开模块导航');
+  assert.equal(await page.locator('#tabs').isVisible(),true);
+  assert.equal(await unobscured(page.getByRole('button',{name:'章节写作',exact:true})),true);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#tabs').isVisible(),false);
+  assert.equal(await page.locator('#toggle-modules').evaluate(el=>el===document.activeElement),true,'Escape returns focus to the module control');
+  await click('切换上下文面板');assert.equal(await page.locator('#right-panel').isVisible(),true);await click('关闭上下文');
+  await page.screenshot({path:path.join(artifacts,'chat-after-home.png')});
+  await click('查看工作台状态');
+  assert.equal(await unobscured(page.locator('#workbench-status')),true);
+  await page.screenshot({path:path.join(artifacts,'chat-after-status.png')});
+  await page.keyboard.press('Escape');
+  await click('展开模块导航');
+  await page.screenshot({path:path.join(artifacts,'chat-after-modules.png')});
+  await page.keyboard.press('Escape');
+  for(const [width,height] of [[1440,900],[1280,720],[1024,768],[390,844],[390,480]]){
+    await page.setViewportSize({width,height});
+    assert.equal(await unobscured(page.getByLabel('创作需求',{exact:true})),true,'Composer must remain visible');
+    assert.equal(await unobscured(page.getByRole('button',{name:'添加上下文',exact:true})),true);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+    assert.equal(await page.locator('#left-panel').isVisible(),false);
+    assert.equal(await page.locator('#tabs').isVisible(),false);
+    for(const name of ['查看工作台状态','切换导航面板','切换上下文面板','查看本窗口活动'])assert.equal(await unobscured(page.getByRole('button',{name,exact:true})),true,'Small header tools must stay reachable');
+    await click('查看工作台状态');assert.equal(await unobscured(page.locator('#workbench-status')),true);await page.keyboard.press('Escape');
+    await click('展开模块导航');
+    assert.equal(await unobscured(page.getByRole('button',{name:'章节写作',exact:true})),true);
+    await page.keyboard.press('Tab');
+    assert.equal(await page.locator('#tabs').evaluate(el=>el.contains(document.activeElement)),true,'Keyboard focus remains in the opened module menu');
+    if(width===390&&height===844)await page.screenshot({path:path.join(artifacts,'chat-after-mobile-modules.png')});
+    await page.keyboard.press('Escape');
+    await page.getByLabel('创作需求',{exact:true}).focus();await page.keyboard.press('End');
+    assert.equal(await page.getByLabel('创作需求',{exact:true}).evaluate(el=>el===document.activeElement),true);
+    if(height>480)await page.screenshot({path:path.join(artifacts,'chat-after-'+width+'.png')});
+    report.layouts.push({width,height,composer_visible:true,no_horizontal_overflow:true});
+  }
+  const stored=await page.evaluate(()=>JSON.stringify({local:{...localStorage},session:{...sessionStorage}}));
+  assert.ok(!stored.includes(request)&&!stored.includes('林舟')&&!stored.includes(body),'No author material in browser storage');
+  await click('人物设定');await click('打开世界观模块');
+  assert.equal(await page.locator('#document-tabs [data-open-tab]').count(),2,'Lore module groups only the current project character/world documents');
+  assert.equal(await page.getByLabel('世界观与设定',{exact:true}).inputValue(),'雾港，旧灯塔','Narrow module navigation must expose real world editor');
+  await page.locator('#document-tabs .active [data-close-tab]').click();
+  assert.equal(await page.getByLabel('人物姓名',{exact:true}).inputValue(),'林舟（虚构）','Closing a lore tab stays inside the lore module');
+  await page.locator('#document-tabs .active [data-close-tab]').click();
+  assert.equal(await page.locator('#chat-composer').isVisible(),true,'Closing the last module tab returns to conversation without jumping to unrelated documents');
+  await click('人物设定');
+  await click('打开长篇记忆模块');assert.match(await page.locator('#content').textContent(),/尚未实现/);
+  await click('创作对话');
+  await page.setViewportSize({width:844,height:390});
+  await openLibrary();await create('＋ 创建小说','小说名称','横屏通知验收（虚构）');
+  await openLibrary();await page.locator('#project-list button').filter({hasText:project.title}).click();
+  assert.equal(await page.locator('#notification').isVisible(),true,'Use a real creation notification in short window');
+  await click('活动 / 控制台');
+  assert.equal(await page.locator('#bottom-panel').isVisible(),true);
+  assert.equal(await unobscured(page.locator('#activity-log')),true,'Activity contents must fit inside the short window');
+  assert.equal(await unobscured(page.getByRole('button',{name:'关闭任务区',exact:true})),true);
+  for(const locator of [page.getByLabel('创作需求',{exact:true}),page.getByRole('button',{name:'添加上下文',exact:true}),page.getByRole('button',{name:'模型配置入口',exact:true})])assert.equal(await unobscured(locator),true,'Short landscape activity must not cover composer');
+  await page.screenshot({path:path.join(artifacts,'chat-after-landscape-activity.png')});
+  await click('关闭任务区');
+  report.layouts.push({width:844,height:390,with_creation_notification_and_activity:true,composer_visible:true});
+  let unload=false;page.once('dialog',async dialog=>{unload=dialog.type()==='beforeunload';await dialog.dismiss();});
+  await page.reload({timeout:2000}).catch(()=>{});assert.equal(unload,true,'Unsent prompts must warn on refresh');
+  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
+  report.status='passed';report.checks=['clean home without manual tabs','hidden home module menu and Escape focus','project/module-scoped concise document tabs','initial black chat home','project-isolated unsent prompts','unbound recovery and confirmed scoped clearing','stable context IDs and revision warning','real manual save and retained drafts','encrypted provider settings and disabled text generation','command/focus/navigation','home activity and short landscape notification','six viewport combinations','no browser-persisted author content','beforeunload protection','no external requests'];
+  console.log('Conversation workbench acceptance passed: '+JSON.stringify(report));
+})().catch(async error=>{
+  report.status='failed';report.error=error.stack;console.error(error);process.exitCode=1;
+  if(page&&!page.isClosed())await page.screenshot({path:path.join(artifacts,'chat-failure.png')}).catch(()=>{});
+}).finally(async()=>{
+  fs.writeFileSync(path.join(artifacts,'chat-acceptance.json'),JSON.stringify(report,null,2));
+  if(browser)await browser.close();if(server&&server.exitCode===null)await new Promise(resolve=>{server.once('exit',resolve);server.kill();});
+  assert.equal(path.dirname(path.resolve(temporary)),path.resolve(os.tmpdir()));assert.ok(path.basename(temporary).startsWith('novel-chat-ui-'));
+  fs.rmSync(temporary,{recursive:true,force:true});
+});

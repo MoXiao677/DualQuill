@@ -1,7 +1,7 @@
 """设置边界：环境变量仅检查有无，不返回、存储或记录密钥正文。"""
 import os
 
-MODULE = {"id": "settings", "name": "设置与 API 密钥管理", "status": "partial", "description": "展示离线状态及环境变量是否配置；密钥录入与真实调用未开放。"}
+MODULE = {"id": "settings", "name": "设置与 API 密钥管理", "status": "partial", "description": "三个站点独立配置、Windows 账户加密保存、真实模型列表检查；文本生成仍未接入。"}
 
 
 def safe_status() -> dict:

@@ -1,0 +1,13 @@
+{
+  "creation_preset_format": 1,
+  "name": "虚构示例：先补配模型再使用",
+  "settings": {
+    "steps": [
+      {"step":"rewrite","adapter_id":"configured-http-v2","connection_id":null,"model_id":"fiction-model","temperature":0.3,"max_tokens":512,"budget_limit":1.0,"allow_unknown_cost":false}
+    ],
+    "style_id": null,
+    "style_prompt": "虚构偏好：句式简洁，保留人物各自的说话习惯。",
+    "manuscript_language": "zh-CN",
+    "budget": {"max_external_calls":1,"max_reserved_output_tokens":512,"risk_budget":1.0,"allow_unknown_cost":false}
+  }
+}

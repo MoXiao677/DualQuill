@@ -52,10 +52,16 @@ class ServerTests(unittest.TestCase):
     def test_homepage_and_static_assets_are_served(self):
         status, page = self.request("GET", "/")
         self.assertEqual(status, 200)
-        self.assertIn("AI-Novel-Writer", page)
+        self.assertIn("DualQuill", page)
         self.assertIn("app.js", page)
         self.assertEqual(self.request("GET", "/app.js")[0], 200)
         self.assertEqual(self.request("GET", "/style.css")[0], 200)
+
+    def test_ui_modules_use_explicit_static_whitelist(self):
+        for asset in ("api.js", "state.js", "layout.js", "views.js"):
+            self.assertEqual(self.request("GET", "/" + asset)[0], 200)
+        for path in ("/server.py", "/../server.py", "/static/../server.py", "/unknown.js"):
+            self.assertEqual(self.request("GET", path)[0], 404)
 
     def test_create_then_read_from_new_server_survives_restart(self):
         state = self.create()
@@ -129,8 +135,10 @@ class ServerTests(unittest.TestCase):
     def test_in_app_guide_is_accessible_without_a_novel(self):
         status, guide = self.request("GET", "/guide.html")
         self.assertEqual(status, 200)
-        self.assertIn("小说作者", guide)
-        self.assertIn("AI 助手", guide)
+        self.assertIn("开始写作", guide)
+        self.assertIn("完全手动", guide)
+        self.assertIn("逐次确认", guide)
+        self.assertNotIn('\ufffd',guide)
 
 
 if __name__ == "__main__":

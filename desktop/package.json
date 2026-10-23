@@ -1,0 +1,30 @@
+{
+  "name": "ai-novel-writer-desktop",
+  "version": "0.4.14",
+  "description": "DualQuill Windows writing workspace",
+  "private": true,
+  "license": "MIT",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test ../tests/desktop-security.test.cjs",
+    "build": "node build.cjs"
+  },
+  "devDependencies": {
+    "electron": "44.7.2",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "local.dualquill.desktop",
+    "productName": "DualQuill",
+    "asar": true,
+    "npmRebuild": false,
+    "forceCodeSigning": false,
+    "publish": null,
+    "directories": {"output": "../dist/s7"},
+    "files": ["package.json", "main.cjs", "preload.cjs", "security.cjs", "backend.cjs", "localization.cjs", "THIRD-PARTY-NOTICES.txt"],
+    "extraResources": [],
+    "win": {"target": ["zip", "nsis"], "icon": "assets/icon.ico", "signAndEditExecutable": true, "signExecutable": false},
+    "nsis": {"oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "deleteAppDataOnUninstall": false, "runAfterFinish": false}
+  }
+}

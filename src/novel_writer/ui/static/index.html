@@ -1,34 +1,74 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <title>AI-Novel-Writer · 写作工作台</title>
+  <meta name="color-scheme" content="light dark">
+  <title>DualQuill · 写作工作台</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css">
-  <script src="/app.js" defer></script>
+  <script src="/app.js" type="module"></script>
 </head>
 <body>
-  <aside class="sidebar">
-    <a class="brand" href="/" aria-label="AI-Novel-Writer 首页"><span class="brand-mark">N</span><span>Novel Writer<small>长篇小说创作工作台</small></span></a>
-    <div class="library-heading"><span>我的书架</span><span id="project-count">0</span></div>
-    <button id="new-project" class="new-project" type="button">＋ 创建小说</button>
-    <nav id="project-list" aria-label="小说项目"><p class="sidebar-empty">正在读取书架…</p></nav>
-    <div class="sidebar-footer"><span class="offline-dot"></span> 离线创作模式<small>内容保存在这台电脑上</small></div>
-  </aside>
-  <div class="workspace">
-    <header class="topbar"><span>AI-Novel-Writer <span class="version-tag">v0.2</span></span><div class="topbar-actions"><button id="reload-project" class="quiet" type="button" disabled>重新读取</button><a id="export-project" class="quiet" hidden>导出已保存数据</a></div></header>
-    <main id="main">
-      <div class="project-header"><div><p class="eyebrow">WRITING WORKSPACE</p><h1 id="book-title">把故事，一章章写下来。</h1><p id="book-description">从一个想法开始，让人物、情节与正文各归其位。</p></div><span id="save-state" class="save-state">尚未选择小说</span></div>
-      <nav id="tabs" class="tabs" aria-label="创作模块"></nav>
+  <header class="topbar">
+    <button id="toggle-modules" class="quiet icon-button" aria-label="展开模块导航" title="打开创作模块" aria-controls="tabs" aria-expanded="false" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <a class="brand" href="/" aria-label="DualQuill 首页"><img class="brand-mark" src="/favicon.svg" alt="" width="29" height="29"><span>DualQuill <small>创作工作台</small></span></a>
+    <button id="open-commands" class="command-trigger" aria-label="打开命令面板" title="搜索命令 · Ctrl+K" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><span>搜索命令 <kbd>Ctrl K</kbd></span></button>
+    <div class="topbar-actions">
+      <button id="open-status" class="quiet icon-button" aria-label="查看工作台状态" title="工作台状态" popovertarget="workbench-status" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></button>
+      <button id="toggle-left" class="quiet icon-button" aria-label="切换导航面板" title="小说书架与章节" aria-controls="left-panel" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M5 8h2M5 12h2"/></svg></button>
+      <button id="toggle-right" class="quiet icon-button" aria-label="切换上下文面板" title="人物、世界观、记忆与历史" aria-controls="right-panel" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16M17 8h2M17 12h2"/></svg></button>
+      <button id="quick-activity" class="quiet icon-button" aria-label="查看本窗口活动" title="本窗口活动与控制台" aria-controls="bottom-panel" aria-expanded="false" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16M8 3v4M16 10v4M10 17v4"/></svg></button>
+      <button id="focus-mode" class="quiet" title="专注写作" type="button">专注</button>
+      <button id="toggle-theme" class="quiet icon-button" aria-label="切换明暗主题" title="切换明暗主题" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v16"/></svg></button>
+    </div>
+  </header>
+  <section id="workbench-status" class="workbench-status" popover aria-label="工作台状态">
+    <h2>工作台状态</h2><dl><dt>当前小说</dt><dd id="overview-project">未绑定小说</dd><dt>保存</dt><dd id="overview-save">尚未选择小说</dd><dt>资料</dt><dd id="overview-chapters">0 章 · 0 位人物</dd><dt>模型</dt><dd id="overview-model">模型未启用</dd><dt>任务</dt><dd id="overview-task">无运行任务</dd><dt>费用 / Token</dt><dd>总费用未汇总；各任务列出实际或未知用量</dd></dl>
+  </section>
+  <div id="workbench" class="workbench">
+    <nav id="tabs" class="activity-bar" aria-label="活动导航"></nav>
+    <aside id="left-panel" class="sidebar" aria-label="书架和章节导航">
+      <div class="panel-title"><span>小说资源</span><button id="close-left" class="quiet drawer-close" aria-label="关闭导航" type="button">×</button></div>
+      <div class="library-heading"><span>我的书架</span><span id="project-count">0</span></div>
+      <button id="new-project" class="new-project" type="button">＋ 创建小说</button>
+      <button id="start-book-creation" class="new-project" type="button"></button>
+      <nav id="project-list" aria-label="小说项目"></nav>
+      <div class="library-heading chapter-heading"><span>章节</span><span id="chapter-count">0</span></div>
+      <label class="sr-only" for="chapter-filter">搜索章节标题</label><input id="chapter-filter" placeholder="搜索章节标题…" type="search">
+      <nav id="chapter-tree" aria-label="章节树"></nav>
+      <p class="sidebar-footer">完全手动 · 模型调用未启用</p>
+    </aside>
+    <div id="left-resize" class="resize-handle" role="separator" aria-label="导航宽度" aria-orientation="vertical" tabindex="0" aria-valuemin="180" aria-valuemax="340" aria-valuenow="220"></div>
+    <main id="main" class="workspace">
+      <div class="project-header"><div><h1 id="book-title">创作对话</h1><p id="book-description"></p></div><div class="document-actions"><button id="reload-project" class="quiet" type="button" disabled>重新读取</button><a id="export-project" class="quiet" hidden>导出已保存数据</a></div></div>
+      <nav id="document-tabs" class="document-tabs" aria-label="当前模块打开的文档" hidden></nav>
+      <nav id="module-tabs" class="module-tabs" aria-label="当前模块页面" hidden></nav>
       <div id="notification" class="notification" role="status" aria-live="polite" hidden></div>
-      <section id="content" class="content" aria-label="创作内容"><p>正在打开工作台…</p></section>
+      <section id="draft-review" class="draft-review" hidden></section>
+      <div id="find-bar" class="find-bar" hidden><label for="find-input">正文查找</label><input id="find-input" type="search"><button id="find-next" type="button">下一个</button><span id="find-result"></span><button id="close-find" type="button" aria-label="关闭查找">×</button></div>
+      <div id="editor-toolbar" class="editor-toolbar" hidden></div>
+      <section id="content" class="content" aria-label="创作内容" tabindex="-1"><p>正在打开工作台…</p></section>
+      <form id="chat-composer" class="chat-composer" aria-label="创作需求输入区" hidden>
+        <div class="composer-scope"><div id="chat-context-summary" class="chat-context-summary" aria-live="polite"></div><button id="switch-prompt-scope" type="button" hidden>查看未绑定需求</button><button id="clear-chat-prompt" aria-label="清空当前需求" type="button" disabled>清空</button></div>
+        <div class="composer-surface">
+          <label class="sr-only" for="chat-input">创作需求</label>
+          <textarea id="chat-input" rows="3" placeholder="描述你的剧情构思、写作要求或修改意见…" aria-describedby="chat-availability chat-storage-note"></textarea>
+          <div class="composer-tools"><button id="add-chat-context" aria-label="添加上下文" type="button">＋ <span>添加上下文</span></button><button id="chat-model" type="button" aria-label="模型配置入口">模型未启用 <span aria-hidden="true">⌄</span></button><span class="composer-shortcut">Enter 换行</span><button id="chat-stop" aria-label="停止生成" type="button" disabled title="此输入未执行生成；任务取消请在任务页操作">■</button><button id="chat-send" aria-label="发送创作需求" type="submit" disabled title="此对话输入仅准备需求，尚不执行模型请求">↑</button></div>
+        </div>
+        <div class="composer-note"><span id="chat-availability">此处准备需求；模型任务从章节页进入</span><span id="chat-storage-note">需求仅保留在本窗口，刷新前请自行留存</span></div>
+      </form>
     </main>
-    <footer class="workspace-footer">先整理故事，再写出自己的声音。<span>模型调用尚未启用</span></footer>
+    <div id="right-resize" class="resize-handle" role="separator" aria-label="上下文宽度" aria-orientation="vertical" tabindex="0" aria-valuemin="220" aria-valuemax="380" aria-valuenow="300"></div>
+    <aside id="right-panel" class="context-panel" aria-label="创作上下文"><div class="panel-title"><span>上下文</span><button id="close-right" class="quiet" aria-label="关闭上下文" type="button">×</button></div><nav class="context-tabs" aria-label="上下文分类"><button data-context="history" aria-label="查看历史上下文" class="active" type="button">历史</button><button data-context="characters" aria-label="查看人物上下文" type="button">人物</button><button data-context="world" aria-label="查看世界观上下文" type="button">世界观</button><button data-context="memory" aria-label="查看记忆状态" type="button">记忆</button></nav><section id="context-content"></section></aside>
+    <section id="bottom-panel" class="bottom-panel" aria-label="离线活动和创作控制台" hidden><nav class="bottom-tabs"><button data-bottom="activity" class="active" type="button">本窗口活动</button><button data-bottom="console" type="button">智能创作控制台</button><button id="close-bottom" class="quiet" type="button" aria-label="关闭任务区">×</button></nav><ol id="activity-log"><li>暂无读写记录。</li></ol><div id="console-shell" hidden><p id="console-scope"></p><p class="hint">对话输入仅在本窗口准备。模型任务、审核、比较和工作流从章节页进入；每次外发仍须单独确认。</p><div class="console-controls"><button disabled type="button">持久AI对话 · 开发中</button><button data-view="settings" type="button">模型与预设设置</button><button data-view="workflows" type="button">打开工作流</button></div></div></section>
   </div>
+  <button id="drawer-backdrop" class="drawer-backdrop" aria-label="关闭侧面抽屉" hidden type="button"></button>
+  <footer class="statusbar"><span class="mode-status"><span class="offline-dot"></span> 本机 · 手动</span><span id="save-state" class="save-state">尚未选择小说</span><span id="word-count">0 字</span><span id="selection-count"></span><span id="prompt-state" hidden></span><span id="model-status">模型未启用 · 无运行任务</span><button id="toggle-bottom" type="button">活动 / 控制台</button><button id="open-find" type="button">查找</button></footer>
+  <dialog id="chat-context-dialog" aria-labelledby="chat-context-title"><form id="chat-context-form"><div class="dialog-heading"><h2 id="chat-context-title">选择当前小说的上下文</h2><button id="close-chat-context" class="quiet" aria-label="关闭上下文选择" type="button">×</button></div><p class="hint">绑定稳定 ID 与当前保存编号；只准备引用，不发送内容。未保存的编辑草稿不纳入。</p><div id="chat-context-fields"></div><div class="form-footer"><button id="clear-chat-context" type="button">清除引用</button><button class="primary" type="submit">确认上下文</button></div></form></dialog>
   <dialog id="create-dialog" aria-labelledby="dialog-title">
     <form id="create-form"><div class="dialog-heading"><h2 id="dialog-title">创建小说</h2><button id="close-dialog" type="button" class="quiet" aria-label="关闭">×</button></div><div id="dialog-fields"></div><p id="dialog-error" class="error-text" role="alert"></p><div class="form-footer"><span>创建后立即保存到本地</span><button class="primary" type="submit">创建</button></div></form>
   </dialog>
+  <dialog id="command-dialog" aria-labelledby="command-title"><h2 id="command-title">工作台命令</h2><label class="sr-only" for="command-search">搜索命令</label><input id="command-search" placeholder="输入命令或页面名称…" autocomplete="off"><div id="command-list"></div><button id="close-commands" class="quiet" type="button">关闭</button></dialog>
 </body>
 </html>

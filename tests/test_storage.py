@@ -5,6 +5,7 @@ from contextlib import closing
 from importlib import import_module, util
 from pathlib import Path
 import sqlite3
+import json
 import sys
 import tempfile
 import unittest
@@ -89,10 +90,59 @@ class StorageTests(unittest.TestCase):
 
     def test_optional_document_fields_are_normalized_before_storage(self):
         self.state["document"] = {"schema_version": 1, "project": {"title": "只有书名的小说"}}
+        original = deepcopy(self.state)
+        from novel_writer.domain import models
+        with patch.object(models, "uuid4", wraps=models.uuid4) as new_id:
+            first = self.repo.create(self.state)
+            self.assertIn("versions", first["document"])
+            self.assertEqual(self.repo.get(first["document"]["project"]["id"]), first)
+            saved = self.repo.save(first, expected_revision=1)
+            self.assertEqual(self.repository_type(self.path).get(first["document"]["project"]["id"]), saved)
+            self.assertEqual(new_id.call_count, 1, "只在明确新建时生成一次项目ID")
+        self.assertEqual(self.state, original)
+        self.assertEqual(first['document']['project'], saved['document']['project'])
+        for field in ('id', 'created_at', 'updated_at'):
+            self.assertTrue(first['document']['project'][field])
+        with closing(sqlite3.connect(self.path)) as connection:
+            payloads = connection.execute('SELECT payload FROM project_snapshots ORDER BY revision').fetchall()
+        self.assertEqual([json.loads(row[0])['document']['project'] for row in payloads],
+                         [first['document']['project'], first['document']['project']])
+
+    def test_missing_persisted_identity_or_times_are_rejected_on_read_and_save(self):
         first = self.repo.create(self.state)
-        self.assertIn("versions", first["document"])
-        self.assertEqual(self.repo.get(first["document"]["project"]["id"]), first)
-        self.repo.save(first, expected_revision=1)
+        project = first['document']['project']
+        original = self.path.read_bytes()
+        for field in ('id', 'created_at', 'updated_at'):
+            with self.subTest(field=field):
+                bad = deepcopy(first)
+                del bad['document']['project'][field]
+                with self.assertRaises(ValueError):
+                    self.repo.save(bad, expected_revision=1)
+                self.assertEqual(self.path.read_bytes(), original)
+                path = Path(self.temp.name) / (field + '.sqlite3')
+                repository = self.repository_type(path)
+                payload = json.dumps(bad)
+                with closing(sqlite3.connect(path)) as connection, connection:
+                    connection.execute('INSERT INTO projects VALUES (?,?,?,?,?)',
+                        (project['id'], project['title'], 1, payload, project['updated_at']))
+                    connection.execute('INSERT INTO project_snapshots VALUES (?,?,?,?)',
+                        (project['id'], 1, payload, project['updated_at']))
+                before = path.read_bytes()
+                with self.assertRaises(ValueError):
+                    repository.get(project['id'])
+                self.assertEqual(path.read_bytes(), before)
+
+    def test_creation_defaults_do_not_accept_unknown_or_future_formats(self):
+        for variant in ('workspace', 'document', 'unknown'):
+            with self.subTest(variant=variant):
+                state = deepcopy(self.state)
+                state['document'] = {'schema_version': 1, 'project': {'title': '虚构新建'}}
+                if variant == 'workspace': state['workspace_version'] = 99
+                elif variant == 'document': state['document']['schema_version'] = 99
+                else: state['document']['project']['unknown'] = True
+                with self.assertRaises(ValueError):
+                    self.repo.create(state)
+                self.assertEqual(self.repo.list_projects(), [])
 
     def test_sql_replace_cannot_overwrite_historical_snapshot(self):
         self.repo.create(self.state)

@@ -1,0 +1,18 @@
+﻿node : SyntaxError: Unexpected token '﻿', "﻿{
+At line:1 char:349
++ ... ocation "G:\agi\AI-Novel-Writer\desktop"; node build.cjs 2>&1 | Tee-O ...
++                                               ~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (SyntaxError: Unexpected token '﻿', "﻿{:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  "name"... is not valid JSON
+    at JSON.parse (<anonymous>)
+    at Object.inventory (G:\agi\AI-Novel-Writer\desktop\delivery-contract.cjs:28:123)
+    at prepare (G:\agi\AI-Novel-Writer\desktop\build.cjs:56:28)
+    at main (G:\agi\AI-Novel-Writer\desktop\build.cjs:95:24)
+    at Object.<anonymous> (G:\agi\AI-Novel-Writer\desktop\build.cjs:125:26)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
