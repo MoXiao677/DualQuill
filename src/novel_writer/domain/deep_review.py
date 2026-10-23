@@ -8,6 +8,8 @@ import re
 PROMPT = 'deep-review-json-1'
 CHECKS = ('relative_time', 'uncertain_time', 'duration', 'causality', 'motivation',
           'character_knowledge', 'book_pacing', 'character_arc', 'semantic_repetition')
+WORKFLOW_CHECKS = ('character_consistency', 'rule_conflict')
+ALL_CHECKS = CHECKS + WORKFLOW_CHECKS
 LIMITATIONS = ('模型意见全部待核实；引文校验只证明出处，不证明语义判断正确。',
                '未知、矛盾、相对和不确定时间不得补成确认事实；计划不等于发生。',
                '人物知识须有信息传递依据；叙述者知道不等于人物知道。',
@@ -41,7 +43,7 @@ class SemanticSource(Value):
     def __post_init__(self):
         super().__post_init__()
         from novel_writer.domain.tasks import require, digest
-        require(bool(self.project_id) and bool(self.entity_id) and bool(self.text.strip()), '深层审核来源为空')
+        require(bool(self.project_id) and bool(self.entity_id) and (bool(self.text.strip()) or self.kind=='chapter'), '深层审核来源为空')
         require(self.text_sha256 == digest(self.text), '深层审核原文摘要不符')
         require(len(self.identity_sha256) == 64 and all(c in '0123456789abcdef' for c in self.identity_sha256), '深层审核身份摘要非法')
         require(self.basis == dict(chapter='saved_body', candidate='unadopted_candidate', material='reference_only', memory='confirmed_memory', planning='planning_record')[self.kind], '深层审核来源与事实地位不符')
@@ -72,11 +74,12 @@ class DeepReviewScope(Value):
     def __post_init__(self):
         super().__post_init__()
         from novel_writer.domain.tasks import require
-        require(0 < len(self.checks) <= len(CHECKS) and len(set(self.checks)) == len(self.checks) and set(self.checks) <= set(CHECKS), '深层检查项目非法')
+        require(0 < len(self.checks) <= len(ALL_CHECKS) and len(set(self.checks)) == len(self.checks) and set(self.checks) <= set(ALL_CHECKS), '深层检查项目非法')
         require(0 < len(self.sources) <= 80 and sum(len(s.text) for s in self.sources) <= 200000, '深层审核范围超过80项/20万字符')
         require(len({(s.kind, s.entity_id) for s in self.sources}) == len(self.sources) and len({s.project_id for s in self.sources}) == 1, '深层审核来源重复/跨书')
         require(self.selection_sha256 == selection_digest(self.checks, self.sources), '深层审核范围摘要不符')
         require(self.book_chapter_count >= sum(s.kind == 'chapter' for s in self.sources), '深层审核全书范围非法')
+        require(all(s.text.strip() or (s.kind=='chapter' and any(c.kind=='candidate' and c.chapter_number==s.chapter_number for c in self.sources)) for s in self.sources),'空正文仅可作为同章真实候选的保存目标守卫')
 
 
 def selection_digest(checks, sources):

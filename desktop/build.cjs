@@ -115,12 +115,12 @@ async function main(){
   contract.verifyBinding(root,prepared.binding,sourceFiles(root));
   contract.verifyResources(stage,{source:prepared.manifest,binding:prepared.binding});
   if(!process.argv.includes('--dir')){
-    const version=require('./package.json').version;
-    const zip=path.join(output,'AI Novel Writer-'+version+'-win.zip');
+    const pkg=require('./package.json'),version=pkg.version,productName=pkg.build.productName;
+    const zip=path.join(output,productName+'-'+version+'-win.zip');
     if(!fs.existsSync(zip)||fs.statSync(zip).size<1024*1024)throw Error('Portable zip was not produced');
-    if(!process.argv.includes('--zip-only')&&!fs.existsSync(path.join(output,'AI Novel Writer Setup '+version+'.exe')))throw Error('NSIS installer was not produced');
+    if(!process.argv.includes('--zip-only')&&!fs.existsSync(path.join(output,productName+' Setup '+version+'.exe')))throw Error('NSIS installer was not produced');
   }
-  process.stdout.write(JSON.stringify({stage,output,source_digest:prepared.binding.digest,sourceFiles:prepared.manifest.length,artifacts:fs.readdirSync(output).filter(name=>/^AI Novel Writer/.test(name))})+'\n');
+  process.stdout.write(JSON.stringify({stage,output,source_digest:prepared.binding.digest,sourceFiles:prepared.manifest.length,artifacts:fs.readdirSync(output).filter(name=>name.startsWith(require('./package.json').build.productName))})+'\n');
 }
 module.exports={sourceFiles,verifyFile,prepare,stagePath};
 if(require.main===module)main().catch(error=>{process.stderr.write(String(error.stack||error)+'\n');process.exitCode=1;});

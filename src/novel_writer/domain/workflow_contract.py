@@ -12,6 +12,7 @@ class Value:
             require(self.text_sha256==digest(self.text) and self.start>=0 and self.end-self.start==len(self.text),'工作流原文快照摘要/范围非法')
             require(self.saved_target.chapter_id==self.chapter_id,'工作流正式目标守卫归属不符')
             if self.kind=='candidate':require(self.version_id is None and self.producer_task_id is not None and self.producer_attempt_id is not None and self.producer_node_attempt_id is not None,'未采纳候选须绑定真实生产者，不能带保存正文版本')
+            elif self.kind=='chapter_outline':require(self.version_id is not None and self.start==0 and all(v is None for v in (self.producer_task_id,self.producer_attempt_id,self.producer_node_attempt_id)),'保存章纲须绑定历史版本且无模型生产者')
             else:require(self.version_id==self.saved_target.version_id and self.saved_target.text[self.start:self.end]==self.text,'保存原稿节选不符目标版本')
         elif isinstance(self,CandidateAuditParameters):require(len(self.instruction)<=4000 and 128<=self.max_output_chars<=100000 and 100<=self.timeout_ms<=30000 and len(self.forbidden_literals)<=30 and all(0<len(x)<=100 for x in self.forbidden_literals),'候选规则参数超限')
 
@@ -27,7 +28,7 @@ class SavedTarget(Value):
 
 @dataclass(frozen=True,kw_only=True)
 class InputSnapshot(Value):
-    kind:Literal['chapter','candidate']
+    kind:Literal['chapter','candidate','chapter_outline']
     project_id:str
     chapter_id:str
     entity_id:str

@@ -459,8 +459,10 @@ def _transform(state, mapper,skill_mapper=None):
             reference['entity_id']=skillref(reference['entity_id']) if reference['kind']=='skill' else ref(reference['kind'],reference['entity_id'])
     def workflow_snapshot(item):
         for key,kind in (('project_id','project'),('chapter_id','chapter'),('producer_task_id','task'),('producer_attempt_id','task_attempt'),('producer_node_attempt_id','workflow_attempt'),('via_node_attempt_id','workflow_attempt'),('review_id','workflow_audit'),('search_node_attempt_id','workflow_attempt'),('version_id','version')):item[key]=ref(kind,item[key])
-        item['entity_id']=ref('candidate' if item['kind']=='candidate' else 'chapter',item['entity_id']);t=item['saved_target'];t['chapter_id']=ref('chapter',t['chapter_id']);t['version_id']=ref('version',t['version_id'])
+        item['entity_id']=ref({'candidate':'candidate','chapter':'chapter','chapter_outline':'chapter_outline'}[item['kind']],item['entity_id']);t=item['saved_target'];t['chapter_id']=ref('chapter',t['chapter_id']);t['version_id']=ref('version',t['version_id'])
     def workflow_ref(item):
+        if item['kind']=='chapter_outline':
+            item['entity_id']=ref('chapter_outline',item['entity_id']);item['version_id']=ref('version',item['version_id']);return
         kinds={'task':'task','candidate':'candidate','chapter':'chapter','review_report':'review_report','model_report':'model_report','workflow_audit':'workflow_audit','memory_proposal':'memory_proposal','model_memory_proposal':'model_memory_proposal','workflow_memory_proposal':'workflow_memory_proposal','planning_proposal':'planning_proposal','approval':'workflow_approval','adoption_receipt':'adoption','proposal_receipt':'proposal_receipt','model_proposal_receipt':'model_proposal_receipt','planning_receipt':'planning_receipt','workflow_receipt':'workflow_receipt','node_attempt':'workflow_attempt','manual_value':'workflow_run','search':'workflow_attempt'}
         item['entity_id']=ref(kinds[item['kind']],item['entity_id'])
         if item['version_id'] is not None and item['kind']!='manual_value':item['version_id']=ref('task_attempt' if item['kind']=='task' else 'version',item['version_id'])

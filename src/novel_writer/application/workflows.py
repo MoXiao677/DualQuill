@@ -100,7 +100,7 @@ class WorkflowCoordinator:
             require(type(request['expected_revision']) is int and request['expected_revision']==state['revision'],'运行保存编号变化');upgrade(state)
             if any(role.adapter_id=='configured-http-v2' for role in roles):state['workspace_version']=max(state['workspace_version'],9)
             v=next((v for v in state['workflow_templates'] if v['id']==request['template_version_id']),None);require(v is not None,'模板版本不属于当前书');spec=validate_template(parse(Template,v['template']));nodes=expand(spec,limits.max_iterations);require(len(nodes)<=limits.max_node_attempts,'展开节点已超过运行尝试上限');target(state,request['chapter_id']);require({n.role for n in nodes if n.role}<=set(r.role for r in roles),'运行缺少模型角色')
-            if any(n.kind=='model_draft' for n in nodes):require(target(state,request['chapter_id']).text=='','专用初稿链只支持空正文目标；已有正文请用改写链，未创建运行或发起请求')
+            if any(n.kind in ('model_draft','model_saved_draft') for n in nodes):require(target(state,request['chapter_id']).text=='','专用初稿链只支持空正文目标；已有正文请用改写链，未创建运行或发起请求')
             if limits.concurrency>1:
                 from novel_writer.domain.workflow_stages import validate_parallel_targets
                 validate_parallel_targets(nodes)
@@ -151,7 +151,9 @@ class WorkflowCoordinator:
             if e['snapshot']:item.setdefault('input_snapshot',e['snapshot'])
             manifest=[dict(attempt_id=p,snapshot=node_state(state,p)['snapshot'],output_refs=node_state(state,p)['output_refs']) for p in a.input_attempt_ids]
             item['input_manifest_sha256']=digest(json.dumps(manifest,ensure_ascii=False,sort_keys=True,separators=(',',':')))
-            if e['status']=='waiting_human':item['diff_sha256']=self._approval_data(state,run,node,a)[1];item['review']=self._approval_view(state,run,node,a)
+            if e['status']=='waiting_human':
+                item['diff_sha256']=self._approval_data(state,run,node,a)[1];item['review']=self._approval_view(state,run,node,a)
+                if self._is_author_choice(run,node):item['candidates']=self._choices(state,node,a)
             audit=next((r for r in state['workflow_audits'] if r['node_attempt_id']==a.id),None)
             if audit:item.update(audit=audit['output'],audit_record_id=audit['id'],response_record_id=audit.get('response_record_id'),upstream=audit['upstream'])
             result.append(item)
@@ -165,17 +167,31 @@ class WorkflowCoordinator:
         skip_reason=None
         if node.when and node_state(state,parent_map[node.when.source]['id'])['flag'] is not node.when.equals:skip_reason='declared_branch_not_taken'
         elif node.kind not in ('join','branch') and any(node_state(state,parent_map[p]['id'])['status'] in ('skipped','rejected','failed') for p in node.parents):skip_reason='required_parent_not_available'
-        if not skip_reason and (node.kind in ('reference','offline_audit','model_rewrite','model_audit','model_candidate_audit','plan_proposal') or node.kind in STAGE_PROMPTS):snapshot=snapshot_for(state,run,node,parent_map,identity)
+        if not skip_reason and (node.kind in ('reference','offline_audit','model_rewrite','model_audit','model_candidate_audit','model_deep_audit','plan_proposal') or node.kind in STAGE_PROMPTS):snapshot=snapshot_for(state,run,node,parent_map,identity)
         if snapshot and node.kind!='reference':require_target(state,snapshot.saved_target)
         if not skip_reason and node.kind in STAGE_PROMPTS:require_stage_source(state,node.kind,snapshot)
-        if not skip_reason and (node.kind in ('offline_audit','model_rewrite','model_audit','model_candidate_audit') or node.kind in STAGE_PROMPTS):
+        if not skip_reason and (node.kind in ('offline_audit','model_rewrite','model_audit','model_candidate_audit','model_deep_audit') or node.kind in STAGE_PROMPTS):
             from novel_writer.application.context_preview import preview
-            p=node.parameters;options=dict(chapter_id=run.chapter_id,budget_chars=p.context_budget,include_writing_rules=True);context=preview(state,options,skills=[]);params=dict(instruction=run.inputs.instruction,max_output_chars=p.max_output_chars,timeout_ms=p.timeout_ms);analysis=node.kind in ('offline_audit','model_audit','model_candidate_audit')
+            p=node.parameters;options=dict(chapter_id=run.chapter_id,budget_chars=p.context_budget,include_writing_rules=True);context=preview(state,options,skills=[]);params=dict(instruction=run.inputs.instruction,max_output_chars=p.max_output_chars,timeout_ms=p.timeout_ms);analysis=node.kind in ('offline_audit','model_audit','model_candidate_audit','model_deep_audit')
+            if node.kind=='model_saved_draft':
+                options.update(include_characters=True,include_current_plan=True)
+                context=preview(state,options,skills=[])
+                require(not any(s['truncated'] for s in context['sources']),'保存章纲/人物资料超过预算，请增大资料预算后准备')
             if analysis:params.update(rules=dict(version='offline-audit-1',forbidden_literals=list(p.forbidden_literals) if type(p) is AuditParameters else [],required_literals=[],normalization='whitespace',near_threshold=.85,minimum_fragment_chars=12,check_timeline=False),selected_chapter_ids=[run.chapter_id],previous_report_id=None)
             request=dict(request_id=str(uuid5(NAMESPACE_URL,identity+'/task-request')),chapter_id=run.chapter_id,task_type='audit_chapter' if analysis else 'rewrite_chapter',context_options=options,context_sha256=digest(context['context_text']),parameters=params,expected_revision=state['revision'])
             if node.kind.startswith('model_'):
                 role=next(r for r in run.roles if r.role==node.role);opts=encode(role);opts.pop('role');request['model_options']=opts
                 if node.kind=='model_audit':require(snapshot.kind=='chapter' and snapshot.text==snapshot.saved_target.text and snapshot.review_id is None and snapshot.search_node_attempt_id is None,'模型审核当前只接整段保存正文；候选/审核链请用离线规则或人工，不伪装成功')
+            if node.kind=='model_deep_audit':
+                from novel_writer.domain.deep_review import PROMPT
+                from novel_writer.application.deep_reviews import canonical_selection
+                require(snapshot.kind=='candidate','审核必须消费真实初稿候选')
+                request['model_options']['prompt_version']=PROMPT
+                request['parameters']['instruction']+='\ncharacter_consistency核对候选context中的冻结人物设定；rule_conflict核对同一context中的作者规则。指引不是硬性禁令；资料不足必须说明，不得编造事实。'
+                request['context_sha256']=digest('')
+                request['context_options']=dict(chapter_id=run.chapter_id,budget_chars=p.context_budget,include_current_plan=False,include_book_outline=False,include_characters=False,include_worldbuilding=False,include_writing_rules=False,include_memories=False,include_search_results=False)
+                outlines=[o['id'] for o in state['document']['chapter_outlines'] if o['chapter_id']==run.chapter_id]
+                request['deep_review']=canonical_selection(dict(checks=['relative_time','uncertain_time','duration','causality','motivation','character_knowledge','character_arc','character_consistency','rule_conflict'],candidate_ids=[snapshot.entity_id],material_ids=[],memory_ids=[],planning_ids=outlines))
             operation,_=self.tasks._preparer(run.project_id,request);_,prepared=operation(state);task=parse(GenerationTask,prepared['task'])
             inherited=[]
             if snapshot.kind=='candidate':inherited=list(get_task(state,snapshot.producer_task_id).frozen.dependencies)
@@ -222,6 +238,8 @@ class WorkflowCoordinator:
                 c=next(c for c in state['generation_candidates'] if c['id']==snapshot.entity_id);refs.append(ref('candidate',c['id'],snapshot.saved_target.version_id,digest(c['output_text'])))
         else:
             record=next(r for r in state['model_reports'] if r['task_id']==task.id);refs.append(ref('model_report',record['id']));flag=bool(record['output']['findings'])
+            if node.kind=='model_deep_audit':
+                refs.append(ref('candidate',snapshot.entity_id,snapshot.saved_target.version_id,snapshot.text_sha256))
         emit_node(state,a,'succeeded',output_refs=tuple(refs),snapshot=snapshot,flag=flag,error_code=None);return True
 
     def step(self,project_id,identifier):
@@ -282,7 +300,15 @@ class WorkflowCoordinator:
                     if run.limits.concurrency>1:continue
                     emit_run(state,run,'waiting','waiting');return state,dict(wait=True)
                 if node.kind in ('apply','plan_proposal'):return state,dict(business=a.id)
-                if node.kind=='reference':
+                if node.kind=='outline_source':
+                    from novel_writer.domain.creative_workflow import outline_payload
+                    outline=next((o for o in state['document']['chapter_outlines'] if o['chapter_id']==run.chapter_id),None)
+                    require(outline is not None,'请先保存章节细纲')
+                    version=next((v for v in reversed(state['document']['versions']) if v['entity_type']=='chapter_outline' and v['entity_id']==outline['id']),None);require(version is not None,'请先保存章节细纲')
+                    value=outline_payload(outline);require(bool(value['core_idea'].strip()) and bool(value['scenes']),'初稿需要非空核心情节和保存场景')
+                    text=json.dumps(value,ensure_ascii=False,sort_keys=True);s=saved_snapshot(state,run.chapter_id,a.id);require(s.saved_target.text=='','初稿仅允许空正文目标');s=replace(s,kind='chapter_outline',entity_id=outline['id'],version_id=version['id'],text=text,start=0,end=len(text),text_sha256=digest(text))
+                    emit_node(state,a,'succeeded',snapshot=s,output_refs=(ref('chapter_outline',outline['id'],version['id'],digest(text)),))
+                elif node.kind=='reference':
                     s=parse(InputSnapshot,e['snapshot']);text=s.text[:node.parameters.max_chars];s=replace(s,text=text,end=s.start+len(text),text_sha256=digest(text),via_node_attempt_id=a.id);emit_node(state,a,'succeeded',snapshot=s,output_refs=(ref(s.kind,s.entity_id,s.version_id,s.text_sha256),))
                 elif node.kind=='manual':
                     value=getattr(run.inputs,node.parameters.slot);emit_node(state,a,'succeeded',output_refs=(ref('manual_value',run.id,node.parameters.slot,digest(value)),))
@@ -318,7 +344,43 @@ class WorkflowCoordinator:
         require(e['snapshot'] is not None,'上游无保存原文');s=parse(InputSnapshot,e['snapshot']);require(s.kind=='chapter' and s.text.strip(),'未采纳候选不得直接产生确认事实记忆');require_target(state,s.saved_target);proposal=MemoryProposal(id=str(uuid5(NAMESPACE_URL,a.id+'/memory-proposal')),project_id=run.project_id,run_id=run.id,node_attempt_id=a.id,source=s,text=s.text[:4000],created_at=utc_now());append(state,'workflow_memory_proposals',proposal);emit_node(state,a,'succeeded',output_refs=(ref('workflow_memory_proposal',proposal.id,s.version_id,digest(proposal.text)),),snapshot=s)
 
     def _parent_for_attempt(self,state,node,a):
+        selected=node_state(state,a.id)['snapshot']
+        if node.kind=='human' and selected and len(node.parents)>1:
+            for identifier in a.input_attempt_ids:
+                e=node_state(state,identifier)
+                if e['snapshot'] and e['snapshot']['entity_id']==selected['entity_id']:
+                    parent=next(p for p in state['workflow_attempts'] if p['id']==identifier)
+                    return parent,e
         parent=next((p for p in state['workflow_attempts'] if p['id'] in a.input_attempt_ids and p['node_id']==node.source),None);require(parent is not None,'人工/写入节点缺声明的上游尝试');return parent,node_state(state,parent['id'])
+
+    def _is_author_choice(self,run,node):
+        return any(n.id==node.id and n.kind=='await_author' for n in run.template.nodes)
+
+    def _choices(self,state,node,a):
+        result=[];seen=set()
+        for identifier in a.input_attempt_ids:
+            e=node_state(state,identifier)
+            for r in e['output_refs']:
+                if r['kind']!='candidate' or r['entity_id'] in seen:continue
+                seen.add(r['entity_id']);c=next(c for c in state['generation_candidates'] if c['id']==r['entity_id'])
+                report=next((state_ref['entity_id'] for state_ref in e['output_refs'] if state_ref['kind']=='model_report'),None)
+                output=next((r['output'] for r in state['model_reports'] if r['id']==report),None)
+                result.append(dict(candidate_id=c['id'],text=c['output_text'],audit_report_id=report,audit=deepcopy(output)))
+        return result
+
+    def select_candidate(self,project_id,identifier,attempt_id,request):
+        check_fields(request,{'candidate_id','expected_revision'});require(set(request)=={'candidate_id','expected_revision'},'选稿字段缺失')
+        def apply(state):
+            run=find_run(state,identifier);self._allowed(state,run)
+            raw=next((a for a in attempts(state,identifier) if a['id']==attempt_id),None);require(raw is not None,'选稿节点不属于运行');a=parse(NodeAttempt,raw);node=next(n for n in run.expanded_nodes if n.id==a.node_id)
+            require(self._is_author_choice(run,node) and node_state(state,a.id)['status']=='waiting_human','节点不在等待作者选稿')
+            require(type(request['expected_revision']) is int and request['expected_revision']==state['revision'],'选稿保存编号变化')
+            require(request['candidate_id'] in {c['candidate_id'] for c in self._choices(state,node,a)},'候选不属于该审核组')
+            source=next(node_state(state,p) for p in a.input_attempt_ids if node_state(state,p)['snapshot'] and node_state(state,p)['snapshot']['entity_id']==request['candidate_id'])
+            s=parse(InputSnapshot,source['snapshot']);require_target(state,s.saved_target)
+            emit_node(state,a,'waiting_human',snapshot=s);return state,None
+        self.repository.atomic(project_id,apply)
+        return self.describe(project_id,identifier)
     def _approval_data(self,state,run,node,a):
         parent,e=self._parent_for_attempt(state,node,a);action=node.parameters.action
         if action=='body':
@@ -352,6 +414,7 @@ class WorkflowCoordinator:
             def apply(state):
                 run=find_run(state,identifier);cur=self._allowed(state,run);require(node_state(state,a.id)['status']=='waiting_human','该人工节点不再等待');current=latest(state,identifier);require(tuple(current[p]['id'] for p in node.parents)==a.input_attempt_ids,'上游已产生新结果，请明确重跑本人工节点');r,sha=self._approval_data(state,run,node,a);require(sha==request['diff_sha256'],'本次差异摘要不符');require(type(request['expected_revision']) is int and request['expected_revision']==state['revision'],'确认保存编号变化，请重看差异');parent,e=self._parent_for_attempt(state,node,a)
                 if request['decision']=='accepted':
+                    if self._is_author_choice(run,node):require(node_state(state,a.id)['snapshot'] is not None,'请先明确选择候选，再核对差异确认采纳')
                     if e['snapshot']:require_target(state,parse(InputSnapshot,e['snapshot']).saved_target)
                     if node.parameters.action=='body':s=parse(InputSnapshot,e['snapshot']);require(s.saved_target.status!='confirmed' or request['authorize_confirmed'],'正式章需要本次明确作者授权')
                     if node.parameters.action=='memory':require(request['confirm_inference'],'记忆/推断必须明确核对与确认')

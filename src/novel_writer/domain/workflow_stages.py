@@ -9,6 +9,7 @@ PROMPTS = {
     'model_idea': 'workflow-idea-json-1',
     'model_outline': 'workflow-outline-json-1',
     'model_draft': 'workflow-draft-1',
+    'model_saved_draft': 'workflow-draft-1',
 }
 PLAN_PROMPTS = tuple(PROMPTS[k] for k in ('model_idea', 'model_outline'))
 
@@ -51,6 +52,9 @@ def source_payload(frozen):
 
 def require_stage_source(state, node_kind, snapshot):
     """Join/loop forwarding cannot turn saved text into an upstream typed plan."""
+    if node_kind == 'model_saved_draft':
+        from novel_writer.domain.creative_workflow import require_outline_source
+        return require_outline_source(state, snapshot)
     if node_kind == 'model_idea':
         require(snapshot.kind == 'chapter', 'IDEA节点只接声明的保存原文/空章引用')
         return None

@@ -828,6 +828,7 @@ class Handler(BaseHTTPRequestHandler):
                         if set(payload)!={'node_id'}:raise ValueError('明确重跑只接受节点身份')
                         self.send_json(200,engine.retry(parts[2],parts[5],payload['node_id']));return
                 if len(parts)==9 and parts[4]=='runs' and parts[6]=='nodes' and parts[8]=='confirm':self.send_json(200,engine.confirm(parts[2],parts[5],parts[7],payload));return
+                if len(parts)==9 and parts[4]=='runs' and parts[6]=='nodes' and parts[8]=='select':self.send_json(200,engine.select_candidate(parts[2],parts[5],parts[7],payload));return
                 self.send_json(404,{'error':'工作流操作入口不存在'});return
             if len(parts) in (4,6) and parts[:2]==['api','projects'] and parts[3]=='comparisons':
                 c=self.server.comparisons

@@ -37,6 +37,12 @@ class TaskParameters(Value):
     max_output_chars:int
     timeout_ms:int
 @dataclass(frozen=True,kw_only=True)
+class CandidateParameters(TaskParameters):
+    count:int
+    def __post_init__(self):
+        super().__post_init__()
+        require(1<=self.count<=3,'初稿候选数量必须为1至3')
+@dataclass(frozen=True,kw_only=True)
 class AuditParameters(TaskParameters):forbidden_literals:tuple[str,...]
 @dataclass(frozen=True,kw_only=True)
 class PlanParameters(Value):
@@ -59,11 +65,11 @@ class Gate(Value):
 @dataclass(frozen=True,kw_only=True)
 class Node(Value):
     id:str
-    kind:Literal['manual','reference','search','offline_audit','model_rewrite','model_audit','model_candidate_audit','model_idea','model_outline','model_draft','plan_proposal','memory_proposal','human','apply','branch','join','loop']
+    kind:Literal['manual','reference','search','offline_audit','model_rewrite','model_audit','model_candidate_audit','model_idea','model_outline','model_draft','plan_proposal','memory_proposal','human','apply','branch','join','loop','outline_source','generate_candidates','audit','await_author','adopt','model_saved_draft','model_deep_audit']
     parents:tuple[str,...]
     source:str|None
     role:Literal['writer','auditor']|None
-    parameters:EmptyParameters|ManualParameters|ReferenceParameters|SearchParameters|TaskParameters|AuditParameters|PlanParameters|ProposalParameters|ActionParameters|BranchParameters|LoopParameters
+    parameters:EmptyParameters|ManualParameters|ReferenceParameters|SearchParameters|TaskParameters|AuditParameters|PlanParameters|ProposalParameters|ActionParameters|BranchParameters|LoopParameters|CandidateParameters
     when:Gate|None
 @dataclass(frozen=True,kw_only=True)
 class Template(Value):
@@ -140,7 +146,7 @@ class RunEvent(Value):
     created_at:str
 @dataclass(frozen=True,kw_only=True)
 class ArtifactRef(Value):
-    kind:Literal['chapter','task','candidate','review_report','model_report','workflow_audit','memory_proposal','model_memory_proposal','workflow_memory_proposal','planning_proposal','approval','adoption_receipt','proposal_receipt','model_proposal_receipt','planning_receipt','workflow_receipt','node_attempt','manual_value','search']
+    kind:Literal['chapter','task','candidate','review_report','model_report','workflow_audit','memory_proposal','model_memory_proposal','workflow_memory_proposal','planning_proposal','approval','adoption_receipt','proposal_receipt','model_proposal_receipt','planning_receipt','workflow_receipt','node_attempt','manual_value','search','chapter_outline']
     entity_id:str
     version_id:str|None
     content_sha256:str|None
@@ -223,6 +229,11 @@ for _kind in ('model_idea','model_outline','model_draft'):
     PARAMETERS[_kind]=TaskParameters
     PERMISSIONS[_kind]='prepare_model_request'
 
+PARAMETERS.update(outline_source=EmptyParameters,generate_candidates=CandidateParameters,audit=TaskParameters,
+                  await_author=ActionParameters,adopt=ActionParameters,model_saved_draft=TaskParameters,model_deep_audit=TaskParameters)
+PERMISSIONS.update(outline_source='read_saved_source',generate_candidates='prepare_model_request',audit='prepare_model_request',
+                   await_author='human_approval',adopt='apply_approved_change',model_saved_draft='prepare_model_request',model_deep_audit='prepare_model_request')
+
 def sorted_nodes(nodes,depth=0):
     require(depth<=1 and 0<len(nodes)<=64,'图大小/嵌套循环超限');byid={n.id:n for n in nodes};require(len(byid)==len(nodes),'节点ID重复');done=[];visiting=set()
     def visit(n):
@@ -230,12 +241,17 @@ def sorted_nodes(nodes,depth=0):
         require(n.id not in visiting,'工作流含未声明循环');visiting.add(n.id)
         require(re.fullmatch(r'[A-Za-z0-9_.@-]{1,100}',n.id) is not None and len(n.parents)==len(set(n.parents)) and set(n.parents)<=set(byid),'节点ID/父节点非法')
         require(n.source is None or n.source in n.parents,'上游source必须是声明的父节点');require(type(n.parameters) is PARAMETERS[n.kind],'节点参数契约与能力不符')
-        if n.kind.startswith('model_'):require(n.role==('auditor' if n.kind in ('model_audit','model_candidate_audit') else 'writer'),'模型角色与能力不符')
+        if n.kind.startswith('model_') or n.kind in ('generate_candidates','audit'):require(n.role==('auditor' if n.kind in ('model_audit','model_candidate_audit','model_deep_audit','audit') else 'writer'),'模型角色与能力不符')
         else:require(n.role is None,'非模型节点不能绑定连接角色')
         if n.when:require(n.when.source in n.parents and byid[n.when.source].kind=='branch','跳过条件仅能引用声明分支')
         if n.kind=='loop':sorted_nodes(n.parameters.nodes,depth+1)
         if n.kind in ('human','apply','branch','memory_proposal','model_candidate_audit','model_idea','model_outline','model_draft'):require(n.source is not None,'该节点必须显式声明上游')
         if n.kind=='apply':require(byid[n.source].kind=='human' and byid[n.source].parameters.action==n.parameters.action,'写入前必须有同类型人工确认节点')
+        if n.kind in ('generate_candidates','audit','await_author','adopt','model_saved_draft','model_deep_audit'):require(n.source is not None,'创作节点必须显式声明上游')
+        if n.kind=='generate_candidates':require(byid[n.source].kind=='outline_source','初稿候选须读取保存章纲')
+        if n.kind=='audit':require(byid[n.source].kind=='generate_candidates','审核须接初稿候选组')
+        if n.kind=='await_author':require(byid[n.source].kind=='audit' and n.parameters.action=='body','选稿须接审核且仅用于正文')
+        if n.kind=='adopt':require(byid[n.source].kind=='await_author' and n.parameters.action=='body','采纳须经过作者选稿')
         for p in n.parents:visit(byid[p])
         visiting.remove(n.id);done.append(n.id)
     for n in nodes:visit(n)
@@ -250,8 +266,31 @@ def validate_template(template):
     collect(template.nodes);require(set(template.permissions)==needed and len(template.permissions)==len(needed),'模板权限不匹配或未注册');return template
 
 def expand(template,limit):
-    result=[]
+    """Compile creative groups to the existing bounded task/approval graph."""
+    groups={};compiled=[]
     for n in sorted_nodes(template.nodes):
+        if n.kind in ('generate_candidates','audit'):
+            sources=(n.source,) if n.kind=='generate_candidates' else groups[n.source]
+            count=n.parameters.count if n.kind=='generate_candidates' else len(sources)
+            ids=tuple(n.id+'.candidate'+str(i+1) for i in range(count))
+            require(not set(ids)&{v.id for v in template.nodes},'展开候选节点ID冲突')
+            p=TaskParameters(context_budget=n.parameters.context_budget,max_output_chars=n.parameters.max_output_chars,timeout_ms=n.parameters.timeout_ms)
+            for i,identifier in enumerate(ids):
+                source=n.source if n.kind=='generate_candidates' else sources[i]
+                parents=tuple(dict.fromkeys((*n.parents,source)))
+                compiled.append(replace(n,id=identifier,kind='model_saved_draft' if n.kind=='generate_candidates' else 'model_deep_audit',parents=parents,source=source,parameters=p))
+            compiled.append(Node(id=n.id,kind='join',parents=ids,source=ids[0],role=None,parameters=EmptyParameters(),when=None))
+            groups[n.id]=ids
+        elif n.kind=='await_author':
+            parents=tuple(dict.fromkeys((*n.parents,*groups[n.source])))
+            compiled.append(replace(n,kind='human',parents=parents,source=groups[n.source][0]))
+        elif n.kind=='adopt':compiled.append(replace(n,kind='apply'))
+        else:compiled.append(n)
+    return _expand_nodes(compiled,limit)
+
+def _expand_nodes(nodes,limit):
+    result=[]
+    for n in sorted_nodes(nodes):
         if n.kind!='loop':result.append(n);continue
         require(n.parameters.iterations<=limit,'循环超过本次运行声明上限');start=n.id+'.start';result.append(Node(id=start,kind='join',parents=n.parents,source=n.source,role=None,parameters=EmptyParameters(),when=n.when));previous=start;body=sorted_nodes(n.parameters.nodes)
         for i in range(n.parameters.iterations):
@@ -267,6 +306,9 @@ def validate_snapshot(state,snapshot):
     from novel_writer.domain.memory import fingerprint
     s=parse(InputSnapshot,snapshot) if type(snapshot) is dict else snapshot;t=s.saved_target;project=state['document']['project']['id'];require(s.project_id==project and t.chapter_id in {c['id'] for c in state['document']['chapters']},'节点原文跨书/目标非法');require(t.source_sha256==fingerprint(dict(number=t.number,title=t.title,content=t.text,status=t.status)),'正式保存目标摘要不符')
     attempts={a['id']:a for a in state['workflow_attempts']};require(s.via_node_attempt_id in attempts,'声明上游尝试悬空')
+    if s.kind=='chapter_outline':
+        from novel_writer.domain.creative_workflow import require_outline_source
+        require_outline_source(state,s,fresh=False)
     if s.kind=='candidate':
         c=next((c for c in state['generation_candidates'] if c['id']==s.entity_id),None);require(c is not None and (c['task_id'],c['attempt_id'])==(s.producer_task_id,s.producer_attempt_id),'候选原文生产者归属不符');require(c['output_text'][s.start:s.end]==s.text and s.end<=len(c['output_text']),'节点未消费候选原文范围');require(s.producer_node_attempt_id in attempts and attempts[s.producer_node_attempt_id]['task_id']==s.producer_task_id,'候选节点生产者不符');producer=next(t for t in state['generation_tasks'] if t['id']==s.producer_task_id);require(producer['frozen']['target']==encode(s.saved_target),'候选链不得重置正式保存目标守卫')
     elif t.version_id is not None:
@@ -316,17 +358,31 @@ def validate_workflow_state(state):
             require(e.run_id==a.run_id and e.seq==i+1 and e.previous_event_id==(previous.id if previous else None),'节点事件链断裂')
             if previous:require(previous.status not in ('succeeded','failed','skipped','cancelled','rejected'),'旧节点终态不可覆盖')
             if e.snapshot:validate_snapshot(state,e.snapshot)
+            if node.kind=='human' and any(n.id==node.id and n.kind=='await_author' for n in run.template.nodes) and e.snapshot:
+                require(e.snapshot.kind=='candidate' and any(
+                    pe['attempt_id'] in a.input_attempt_ids and pe['status']=='succeeded' and pe['snapshot'] is not None
+                    and pe['snapshot']==encode(e.snapshot) for pe in state['workflow_node_events']),
+                    '作者选稿不是本次审核组的真实候选')
             if e.approval_id:require(e.approval_id in approvals and approvals[e.approval_id].node_attempt_id==a.id,'节点审批归属不符')
             previous=e
         node_latest[a.id]=events[-1]
         if a.task_id:
             task=tasks[a.task_id];p=task['frozen']['parameters']
+            if node.kind=='model_deep_audit':
+                scope=p.get('deep_review');snap=events[0].snapshot
+                require(scope is not None and snap is not None and snap.kind=='candidate','创作审核缺少深层范围/候选快照')
+                require(encode(snap.saved_target)==task['frozen']['target'] and snap.via_node_attempt_id in a.input_attempt_ids,'创作审核保存目标/上游不符')
+                require([s['entity_id'] for s in scope['sources'] if s['kind']=='candidate']==[snap.entity_id],'创作审核未消费声明的单个候选')
+                require({'character_consistency','rule_conflict','relative_time'}<=set(scope['checks']),'创作审核缺少人物/时间/规则检查')
             if 'upstream' in p:
                 s=validate_snapshot(state,p['upstream']);require(encode(s.saved_target)==task['frozen']['target'],'节点任务丢失正式保存守卫');require(s.via_node_attempt_id in a.input_attempt_ids or (node.source is None and s.via_node_attempt_id==a.id),'任务未消费所选父结果')
             from novel_writer.domain.workflow_stages import PROMPTS,require_stage_source,typed_result
             if node.kind in PROMPTS:
                 require(state['workspace_version']>=40 and p['binding']['prompt_version']==PROMPTS[node.kind],'专用章节节点提示词/格式不符')
-                require_stage_source(state,node.kind,parse(InputSnapshot,p['upstream']))
+                if node.kind=='model_saved_draft':
+                    from novel_writer.domain.creative_workflow import require_outline_source
+                    require_outline_source(state,parse(InputSnapshot,p['upstream']),fresh=False)
+                else:require_stage_source(state,node.kind,parse(InputSnapshot,p['upstream']))
                 if task['status']=='succeeded' and node.kind in ('model_idea','model_outline'):
                     from novel_writer.domain.tasks import GenerationTask
                     candidate=next(c for c in state['generation_candidates'] if c['id']==task['candidate_id'])

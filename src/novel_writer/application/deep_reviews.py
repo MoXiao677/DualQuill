@@ -4,7 +4,7 @@ from dataclasses import replace
 import json
 
 from novel_writer.domain.deep_review import (
-    CHECKS, LIMITATIONS, PROMPT, DeepReviewScope, SemanticSource,
+    ALL_CHECKS, LIMITATIONS, PROMPT, DeepReviewScope, SemanticSource,
     ReviewDecision, finding_signature, selection_digest, time_window,
 )
 from novel_writer.domain.tasks import digest, encode, parse, require, uuid_value
@@ -20,7 +20,7 @@ def canonical_selection(raw):
     for name in SELECTION_FIELDS:
         values = raw[name]
         require(type(values) is list and all(type(v) is str and v for v in values) and len(values) == len(set(values)) and len(values) <= 80, '深层范围列表非法')
-    require(bool(raw['checks']) and set(raw['checks']) <= set(CHECKS), '深层检查项非法')
+    require(bool(raw['checks']) and set(raw['checks']) <= set(ALL_CHECKS), '深层检查项非法')
     return deepcopy(raw)
 
 
@@ -70,6 +70,10 @@ def capture(state, kind, identifier, record_kind=None):
         require(not any(r['candidate_id'] == identifier for r in state.get('adoption_receipts', [])), '深层审核仅接受未采纳候选')
         require(value['chapter_id'] not in hidden_ids(state), '候选目标章节已归档/回收')
         text = value['output_text']; identity = dict(provenance=value['provenance'], status=task['status'])
+        # New saved-outline tasks explicitly select the saved character/rule
+        # context. Keep it frozen with the candidate, with its original deps.
+        if task['frozen']['parameters'].get('upstream',{}).get('kind')=='chapter_outline':
+            identity['creation_context']=task['frozen']['context_text']
         chapter_number = next(c['number'] for c in state['document']['chapters'] if c['id'] == value['chapter_id'])
         producer_task = value['task_id']; producer_attempt = value['attempt_id']
         producer_node = next((a['id'] for a in state.get('workflow_node_attempts', []) if a.get('task_id') == producer_task), None)
@@ -121,6 +125,7 @@ def capture(state, kind, identifier, record_kind=None):
 
 def freeze_scope(state, chapter_ids, selection):
     selection = canonical_selection(selection)
+    require(bool(selection['candidate_ids']) or all(_find(state['document']['chapters'],i)['content'].strip() for i in chapter_ids),'空正文不能单独审核')
     sources = [capture(state, 'chapter', i) for i in chapter_ids]
     for name, kind in [('candidate_ids', 'candidate'), ('material_ids', 'material'), ('memory_ids', 'memory'), ('planning_ids', 'planning')]:
         sources += [capture(state, kind, i) for i in selection[name]]
