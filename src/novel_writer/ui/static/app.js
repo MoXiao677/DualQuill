@@ -518,7 +518,7 @@ function updatePromptSummary() {
   $('#prompt-state').textContent=prompt.text?'需求未发送 · 仅本窗口':'需求准备';
 }
 function renderPrompt() {
-  $('#chat-composer').hidden=view!=='chat'||Boolean(workspace);
+  $('#chat-composer').hidden=view!=='chat';
   $('#prompt-state').hidden=view!=='chat'||Boolean(workspace);
   if(view==='chat') { $('#chat-input').value=prompts.get(promptProject()).text; updatePromptSummary(); }
 }
@@ -1497,7 +1497,27 @@ $('#chat-input').addEventListener('input',()=>{
   const project=promptProject();
   prompts.set(project,{...prompts.get(project),text:$('#chat-input').value});updatePromptSummary();renderDocumentTabs();
 });
-$('#chat-composer').addEventListener('submit',event=>{event.preventDefault();});
+$('#chat-composer').addEventListener('submit',async event=>{
+  event.preventDefault();
+  const text=$('#chat-input').value.trim();
+  if(!text||busy)return;
+  if(!workspace){notify('先打开或创建一本小说，再开始对话。',true);return;}
+  const project=workspace.document.project.id,base='/api/projects/'+encodeURIComponent(project)+'/console';
+  setBusy(true);
+  try{
+    let sessionId=selectedConsoleSession();
+    if(!sessionId){
+      const created=await api(base+'/sessions',{method:'POST',body:JSON.stringify({operation_id:crypto.randomUUID(),title:'创作对话'})});
+      sessionId=created.id;selectConsoleSession(sessionId);
+    }
+    await api(base+'/sessions/'+encodeURIComponent(sessionId)+'/messages',{method:'POST',body:JSON.stringify({operation_id:crypto.randomUUID(),role:'author',text,refs:[]})});
+    $('#chat-input').value='';
+    prompts.set(project,{...prompts.get(project),text:''});
+    await renderMain();
+    notify('已记入创作对话。');
+  }catch(error){notify(error.message,true);}
+  finally{setBusy(false);}
+});
 $('#chat-context-form').addEventListener('submit',event=>{
   event.preventDefault();if(!workspace||busy)return;
   const form=event.currentTarget,project=workspace.document.project.id;
