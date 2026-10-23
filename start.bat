@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title AI-Novel-Writer
+title DualQuill
 
 rem Use an available Python 3.11+ runtime; no package installation is needed.
 py -3 -c "import sys; sys.exit(0 if sys.version_info >= (3,11) else 1)" >nul 2>&1
