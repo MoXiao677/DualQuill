@@ -1,4 +1,5 @@
 import {activeChapters} from './views.js';
+import {renderAgentChat,renderAgentSettings,bindAgentPage,sendAgentMessage,changeEntity,syncAgentControls,hasPendingAttachments,attachmentsUploading,importLocalPath} from './chat_workspace.js';
 import {renderChapterWritingPrepare,bindChapterWritingPrepare,renderChapterWritingTask,bindChapterWritingTask,useChapterWritingInput} from './chapter_writing.js';
 import {renderChapterPlanningPrepare,bindChapterPlanningPrepare,renderChapterPlanningTask,bindChapterPlanningTask} from './chapter_planning.js';
 import {renderSceneExpansionPrepare,bindSceneExpansionPrepare,renderSceneExpansionTask,bindSceneExpansionTask} from './scene_expansion.js';
@@ -277,6 +278,7 @@ function setBusy(value) {
     disabledBeforeRequest.forEach((wasDisabled, element) => { element.disabled = wasDisabled; });
     disabledBeforeRequest.clear();
     $('#reload-project').disabled = !workspace;
+    if(view==='chat')syncAgentControls();
     if(view==='chat') updatePromptSummary();
     const element=requestFocus && document.getElementById(requestFocus.id);
     if(element && !element.disabled && element.getClientRects().length && !document.querySelector('dialog[open]')) {
@@ -295,7 +297,7 @@ function mayLeave() {
 
 function renderLibrary() {
   $('#project-count').textContent = projects.length;
-  $('#project-list').innerHTML = `<label for="project-scope-filter">书架范围</label><select id="project-scope-filter">${[['active','创作中'],['archived','已归档'],['deleted','回收站'],['all','全部']].map(([value,label])=>`<option value="${value}" ${shelfScope===value?'selected':''}>${label}</option>`).join('')}</select>`+(projects.some(project=>shelfScope==='all'||(project.author_state||'active')===shelfScope) ? projects.filter(project=>shelfScope==='all'||(project.author_state||'active')===shelfScope).map(project => `<button class="book-link ${workspace?.document.project.id === project.id ? 'active' : ''}" data-project="${escapeHTML(project.id)}"><span>${escapeHTML(project.title)}</span><small>保存编号 ${project.revision}</small></button>`).join('') : '<p class="sidebar-empty">当前书架范围没有小说。</p>');
+  $('#project-list').innerHTML = `<label for="project-scope-filter">书架范围</label><select id="project-scope-filter">${[['active','创作中'],['archived','已归档'],['deleted','回收站'],['all','全部']].map(([value,label])=>`<option value="${value}" ${shelfScope===value?'selected':''}>${label}</option>`).join('')}</select>`+(projects.some(project=>shelfScope==='all'||(project.author_state||'active')===shelfScope) ? projects.filter(project=>shelfScope==='all'||(project.author_state||'active')===shelfScope).map(project => `<div class="agent-shelf-row"><button class="book-link ${workspace?.document.project.id === project.id ? 'active' : ''}" data-project="${escapeHTML(project.id)}"><span>${escapeHTML(project.title)}</span><small>保存编号 ${project.revision}</small></button><button type="button" class="quiet" data-chat-book="${escapeHTML(project.id)}" data-restore="${['deleted','archived'].includes(project.author_state)}" aria-label="${['deleted','archived'].includes(project.author_state)?'恢复':'删除'}这本书">${['deleted','archived'].includes(project.author_state)?'恢复':'删除'}</button></div>`).join('') : '<p class="sidebar-empty">当前书架范围没有小说。</p>');
   $('#project-scope-filter').onchange=event=>{shelfScope=event.target.value;renderLibrary();};
   renderChapterTree();
 }
@@ -332,7 +334,7 @@ function renderChrome() {
   $('#export-project').hidden = !workspace;
   if (project) $('#export-project').href = `/api/projects/${project.id}/export`;
   const navButton=([id,name])=>`<button data-view="${id}" aria-label="${name}" title="${moduleNames[id]||name}" class="${view===id?'active':''}" ${!workspace&&!globalViews.includes(id)?'disabled':''}><span class="activity-icon" aria-hidden="true">${icons[id]}</span><span class="module-label">${moduleNames[id]||name}</span></button>`;
-  $('#tabs').innerHTML = '<p class="nav-caption">WORKSPACE</p>'+navButton(tabs[0])+'<p class="nav-caption">创作模块</p>'+tabs.filter(([id])=>moduleNames[id]).map(tab=>navButton(tab)+(tab[0]==='characters'?'<div class="module-children">'+tabs.filter(([id])=>['world','memory'].includes(id)).map(navButton).join('')+'</div>':'')).join('')+'<div class="nav-utilities">'+tabs.filter(([id])=>['skills','guide'].includes(id)).map(navButton).join('')+'</div>';
+  $('#tabs').innerHTML = navButton(tabs[0])+navButton(tabs.find(([id])=>id==='writing'))+navButton(['settings','API 设置'])+'<details class="agent-advanced"><summary>查看资料与高级功能</summary>'+tabs.filter(([id])=>moduleNames[id]&&!['writing','settings'].includes(id)).map(navButton).join('')+'<div class="nav-utilities">'+tabs.filter(([id])=>['skills','guide'].includes(id)).map(navButton).join('')+'</div></details>';
   const lore=['characters','world','memory'].includes(view);
   $('#module-tabs').hidden=!lore;
   $('#module-tabs').innerHTML=lore?[['characters','人物资料','打开人物模块'],['world','世界观资料','打开世界观模块'],['memory','长篇记忆','打开长篇记忆模块']].map(([id,label,name])=>`<button data-view="${id}" aria-label="${name}" class="${view===id?'active':''}" type="button">${label}</button>`).join(''):'';
@@ -424,6 +426,10 @@ function showVersion() {
 async function renderModules(){const cards=[["writing","ready","手动正文与版本","正文、IDEA与章纲分别保存，确认章修改和恢复须授权。"],["creation","partial","从零规划与AI辅助","七步方案、分支、锁与确认已可用；真实规划质量待验。"],["model-prepare","partial","模型改写与审核","初稿、追加续写、整章改写与引文审核可用，逐请求确认；细纲生成和场景/选区扩写已接通，真实质量待验。"],["rules","partial","文风导入、提炼与试写","资料/自有卡、原生搜索公开样本、短试写与A/B；真实文风效果待验。"],["memory","partial","长篇记忆","正文变更自动进入待刷新队列；作者确认更新、历史追踪和失败重试可用。本地原文摘录自动刷新默认关闭，语义摘要仍须逐请求确认。"],["reviews","partial","离线规则审核与查重","明确时间/字面规则与基础重复检查可用，不代表完整语义或全网审核。"],["knowledge","partial","图谱与规划反馈","人工实体关系、合并恢复、字段反馈与局部提案可用，自动抽取未完成。"],["comparisons","partial","同题盲评比较","冻结共同输入、逐侧执行、评分揭晓和打开候选；不是通用模型排名。"],["workflows","ready","持久工作流与人工节点","保存章纲→多候选初稿→深审→等你选稿→采纳写正文，全链路可跑；暂停取消、中断续跑、失败重试可用。真实模型质量待验。"],["history","ready","完整备份、恢复与复制","当前已实现对象的历史完整保存，恢复到新目录、复制使用新编号；不含密钥或未保存输入。"],["settings","partial","模型连接与预设","自建连接、独立步骤绑定和会话开关可用；真实服务与账单另验。"],["chat","partial","持久对话与完整创作链","持久会话、可编辑计划、显式单步运行及细纲/扩写/分级规则已接通；后台自动执行未完成。"],["writing","partial","章节生命周期与异常恢复","章节重排/跨卷拖拽、回收站恢复、严格编码迁移和磁盘草稿恢复可用；真实长篇性能待验。"]];const labels={ready:'可使用',partial:'可用·待模型验证',planned:'开发中'};return '<section class="panel"><h2>审核、图谱与工作流</h2><p>从下方进入已实现的具体流程。每项说明实际范围；模型结果仍待核实，开启模型不授予自动执行权限。</p></section><div class="capability-list">'+cards.map(([target,status,title,description])=>'<article class="capability"><h3>'+escapeHTML(title)+'</h3><p>'+escapeHTML(description)+'</p><span class="badge '+status+'">'+labels[status]+'</span>'+(target?'<button type="button" data-view="'+target+'" '+(!workspace&&!globalViews.includes(target)?'disabled':'')+'>打开</button>':'')+'</article>').join('')+'</div>';}
 
 async function renderSettings() {
+  const settings=await api('/api/settings/chat');sessionModels=!settings.offline;
+  return renderAgentSettings(settings);
+}
+async function renderAdvancedSettings() {
   const settings = await api('/api/settings');
   creationPresetData=workspace?await api('/api/projects/'+encodeURIComponent(workspace.document.project.id)+'/creation-presets'):null;
   const canon = workspace ? await api('/api/projects/'+encodeURIComponent(workspace.document.project.id)+'/canon-maintenance') : null;
@@ -508,7 +514,7 @@ function updatePromptSummary() {
   const labels=[bound?workspace.document.project.title:'未绑定小说',chapter?.title,character?.name,prompt.world?'世界观':null].filter(Boolean);
   const hasContext=prompt.chapter||prompt.character||prompt.world;
   const stale=hasContext&&workspace&&prompt.revision!==workspace.revision;
-  $('#chat-context-summary').textContent=labels.join(' / ')+(stale?' · 已保存内容有更新，请复核上下文':hasContext?' · 已保存上下文 #'+prompt.revision:' · 尚未添加章节 / 人物');
+  $('#chat-context-summary').textContent=(workspace?.document.project.title||'新小说')+' · 自动读取人物、设定、大纲和近期正文';
   $('#chat-context-summary').classList.toggle('stale',Boolean(stale));
   $('#chat-context-summary').title=$('#chat-context-summary').textContent;
   $('#add-chat-context').disabled=!bound;
@@ -680,7 +686,16 @@ async function showSkillSource() {
   $('#skill-source').value = skill.files.find(item => item.path === selection.value)?.content || '';
 }
 
+function captureChatScroll(){
+  const content=$('#content');
+  if(content.dataset.renderedView!=='chat')return null;
+  return {project:content.dataset.renderedProject,top:content.scrollTop,
+    nearBottom:content.scrollHeight-content.clientHeight-content.scrollTop<=64};
+}
+
 async function renderMain() {
+  const entryChatScroll=captureChatScroll();
+  const targetProject=workspace?.document.project.id||'',targetView=view;
   if(stopWorkflowPolling){stopWorkflowPolling();stopWorkflowPolling=null;}
   if(bookAiPollTimer){clearTimeout(bookAiPollTimer);bookAiPollTimer=null;}
   if(styleTimer){clearTimeout(styleTimer);styleTimer=null;}
@@ -703,18 +718,7 @@ async function renderMain() {
   textareaValues.clear();
   let html;
   if (view === 'chat') {
-    if(workspace){
-      const project=workspace.document.project.id,base='/api/projects/'+encodeURIComponent(project)+'/console';
-      consoleListing=await api(base);
-      if(!selectedConsoleSession()||!consoleListing.sessions.some(v=>v.id===selectedConsoleSession()))selectConsoleSession(consoleListing.sessions.slice().sort((a,b)=>b.updated_at.localeCompare(a.updated_at))[0]?.id||'');
-      consoleRunListing=selectedConsoleSession()?await api(base+'/runs'):{revision:workspace.revision,runs:[]};
-      const sessionRuns=consoleRunListing.runs.filter(v=>v.session_id===selectedConsoleSession());
-      if(!selectedConsoleRun()||!sessionRuns.some(v=>v.id===selectedConsoleRun()))selectConsoleRun(sessionRuns.at(-1)?.id||'');
-      consoleDetail=selectedConsoleSession()?await api(base+'/sessions/'+selectedConsoleSession()):null;
-      consoleRunDetail=selectedConsoleRun()?await api(base+'/runs/'+encodeURIComponent(selectedConsoleRun())):null;
-      html=renderConsole(workspace,consoleListing,consoleDetail,await api('/api/tasks/capabilities'),consoleRunListing,consoleRunDetail);
-    }
-    else html=renderChat();
+    html=await renderAgentChat(workspace);
   }
   else if(view==='creation'){bookCreationData=workspace?await api('/api/projects/'+encodeURIComponent(workspace.document.project.id)+'/book-creation'):null;bookAiData=workspace&&bookCreationData?.selected?await api('/api/projects/'+encodeURIComponent(workspace.document.project.id)+'/book-ai'):null;bookAiCaps=bookAiData?await api('/api/tasks/capabilities'):null;html=renderBookCreation(workspace,bookCreationData)+(bookAiData?renderBookAI(workspace,bookCreationData,bookAiData,bookAiCaps):'');}
   else if (view === 'preview'&&workspace)html=renderPreview(workspace,selectedChapter,searchSelections);
@@ -765,15 +769,39 @@ async function renderMain() {
   else if (view === 'characters') html = renderCharacters(workspace, selectedCharacter);
   else if (view === 'world') html = panelForm('save_worldbuilding', '故事发生的世界', '记录地点、组织、力量体系，以及不能随意改变的设定。', field('content', '世界观与设定', workspace.worldbuilding, true, false, 'edit', 'tall'), '保存世界观');
   else if (view === 'rules') {styleTrialData=await loadStyleTrials(workspace);publicSearchData=await loadPublicSearch(workspace);styleData=await loadStyles(workspace);rulesData=await api('/api/projects/'+encodeURIComponent(workspace.document.project.id)+'/rules');ruleResolved=selectedChapter?await api('/api/projects/'+encodeURIComponent(workspace.document.project.id)+'/rules/resolve/'+encodeURIComponent(selectedChapter)):null;html=renderScopedRules(workspace,rulesData,selectedChapter,ruleResolved)+renderStyleTrials(workspace,styleTrialData)+renderPublicSearch(workspace,publicSearchData)+renderStyles(workspace,styleData)+panelForm('save_writing_rules', '保持这本书的声音', '写下叙事视角、语言节奏和表达偏好，供后续写作参考。旧规则会作为本书级 legacy 指引继续生效。', field('content', '文风与写作规则', workspace.writing_rules, true, false, 'edit', 'tall'), '保存写作规则');}
-  if (renderId !== rendering) return;
-  $('#content').innerHTML = html;
+  if (renderId !== rendering || view!==targetView || (workspace?.document.project.id||'')!==targetProject) return;
+  // Read the still-rendered DOM immediately before replacement: the author may
+  // have scrolled while the asynchronous requests were pending.
+  const latestChatScroll=captureChatScroll();
+  const chatScroll=latestChatScroll||entryChatScroll;
+  const content=$('#content');
+  content.innerHTML = html;
+  content.dataset.renderedProject=targetProject;
+  content.dataset.renderedView=targetView;
+  if(view==='chat'||view==='settings')bindAgentPage({
+    project:()=>workspace?.document.project.id||'',notice:notify,
+    refresh:async project=>{
+      if(project)workspace=await api('/api/projects/'+encodeURIComponent(project));
+      await refreshProjects();renderChrome();await renderMain();
+    }
+  });
   const heading=$('#content form[data-action] .panel-heading');
   $('#editor-toolbar').replaceChildren();
   $('#editor-toolbar').hidden=!heading;
   if(heading) $('#editor-toolbar').append(heading);
   textareaValues.forEach((value, id) => { document.getElementById(id).value = value; });
   rememberDocument();
-  hydrateDraft();
+  if(targetView==='chat'){
+    baseline={};dirty=false;
+    $('#draft-review').hidden=true;
+    saveIndicator();updateWordCount();
+    requestAnimationFrame(()=>{
+      if(renderId!==rendering || view!==targetView || (workspace?.document.project.id||'')!==targetProject ||
+         content.dataset.renderedProject!==targetProject || content.dataset.renderedView!==targetView)return;
+      const sameProject=chatScroll?.project===targetProject;
+      content.scrollTop=!sameProject||chatScroll.nearBottom?content.scrollHeight:chatScroll.top;
+    });
+  }else hydrateDraft();
   renderChapterTree();
   renderContext(); updateModeChrome();
   if(view==='retrieval'&&workspace)bindSemanticRetrieval($('#semantic-retrieval'),workspace,{jump:async(result,index)=>{if(!result||result.project_id!==workspace?.document.project.id)return;localSearchResult=result;await jumpSearchSource(index);},selected:async(result,indexes)=>{if(!result||result.project_id!==workspace?.document.project.id)return;searchSelections=indexes.map(i=>result.hits[i].selection);selectedChapter=$('#local-search-form').elements.chapter_id.value;await navigate('preview');}});
@@ -1497,26 +1525,52 @@ $('#chat-input').addEventListener('input',()=>{
   const project=promptProject();
   prompts.set(project,{...prompts.get(project),text:$('#chat-input').value});updatePromptSummary();renderDocumentTabs();
 });
+function standaloneLocalPath(text){
+ if(!text||/[\r\n]/.test(text))return null;
+ let value=text.trim();
+ if((value.startsWith('"')&&value.endsWith('"'))||(value.startsWith("'")&&value.endsWith("'")))value=value.slice(1,-1);
+ return /^(?:[A-Za-z]:[\\/]|\/)/.test(value)?value:null;
+}
+let agentSubmitting=false;
+// The composer input is persistent; bind once here, never during rendering.
+$('#chat-input').onkeydown=event=>{
+  if(event.key!=='Enter'||composing||event.isComposing||event.keyCode===229)return;
+  if(event.ctrlKey||event.altKey||event.metaKey||event.shiftKey)return;
+  event.preventDefault();
+  if(event.repeat||busy||agentSubmitting||attachmentsUploading(workspace?.document.project.id)||$('#chat-send').disabled)return;
+  $('#chat-composer').requestSubmit();
+};
+$('#project-list').addEventListener('click',async event=>{
+ const button=event.target.closest('[data-chat-book]');if(!button)return;
+ event.preventDefault();event.stopPropagation();if(busy)return;
+ try{
+  const project=button.dataset.chatBook,restore=button.dataset.restore==='true';
+  const current=await api('/api/projects/'+encodeURIComponent(project));
+  if(!restore&&!window.confirm('将《'+current.document.project.title+'》移入回收站？原文和历史可以恢复。'))return;
+  setBusy(true);await changeEntity(project,current.revision,'book',project,restore);
+  if(workspace?.document.project.id===project)workspace=await api('/api/projects/'+encodeURIComponent(project));
+  await refreshProjects();renderChrome();await renderMain();notify(restore?'书籍已恢复。':'书籍已移入回收站。');
+ }catch(error){notify(error.message,true);}finally{setBusy(false);}
+});
 $('#chat-composer').addEventListener('submit',async event=>{
   event.preventDefault();
   const text=$('#chat-input').value.trim();
-  if(!text||busy)return;
-  if(!workspace){notify('先打开或创建一本小说，再开始对话。',true);return;}
-  const project=workspace.document.project.id,base='/api/projects/'+encodeURIComponent(project)+'/console';
-  setBusy(true);
+  const attachmentProject=workspace?.document.project.id;
+  if(busy||agentSubmitting||attachmentsUploading(attachmentProject))return;
+  if(!text&&!hasPendingAttachments(attachmentProject))return;
+  const project=promptProject();
+  agentSubmitting=true;$('#chat-send').disabled=true;
   try{
-    let sessionId=selectedConsoleSession();
-    if(!sessionId){
-      const created=await api(base+'/sessions',{method:'POST',body:JSON.stringify({operation_id:crypto.randomUUID(),title:'创作对话'})});
-      sessionId=created.id;selectConsoleSession(sessionId);
-    }
-    await api(base+'/sessions/'+encodeURIComponent(sessionId)+'/messages',{method:'POST',body:JSON.stringify({operation_id:crypto.randomUUID(),role:'author',text,refs:[]})});
+    const path=standaloneLocalPath(text);
+    if(path)await importLocalPath(path,attachmentProject);
+    const job=await sendAgentMessage(path?'':text,attachmentProject,workspace?.revision);
     $('#chat-input').value='';
     prompts.set(project,{...prompts.get(project),text:''});
-    await renderMain();
-    notify('已记入创作对话。');
-  }catch(error){notify(error.message,true);}
-  finally{setBusy(false);}
+    workspace=await api('/api/projects/'+encodeURIComponent(job.project_id));
+    unboundPrompt=false;await refreshProjects();renderChrome();await renderMain();
+    notify('需求已保存，正在处理。');
+  }catch(error){notify(error.message+'；请保留输入，若请求已发出可重新读取查看进度。',true);$('#chat-send').disabled=false;}
+  finally{agentSubmitting=false;}
 });
 $('#chat-context-form').addEventListener('submit',event=>{
   event.preventDefault();if(!workspace||busy)return;
@@ -1572,6 +1626,7 @@ function restoreSettingsInput(saved){
   try {
     document.documentElement.lang='zh-CN';
     setToken((await api('/api/session')).token);
+    sessionModels=!(await api('/api/settings/chat')).offline;
     if(location.hash==='#settings') view='settings';
     await refreshProjects();
     const savedId = sessionStorage.getItem('novel-project');

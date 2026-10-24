@@ -14,7 +14,7 @@ from contextlib import closing
 
 from novel_writer.ui.server import Handler, create_server
 
-VERSION='0.4.8'
+VERSION='0.4.17'
 
 def start_profile(profile, *, database=None, server_factory=create_server):
     """Snapshot before opening an older profile; roll back a failed initialization."""
@@ -34,7 +34,7 @@ def start_profile(profile, *, database=None, server_factory=create_server):
             source.backup(target)
             if target.execute('PRAGMA integrity_check').fetchone()!=('ok',):raise ValueError('Upgrade snapshot failed')
     try:
-        server=server_factory(database,port=0,provider_path=profile/'providers.dpapi',offline=True,drafts_path=profile/'drafts')
+        server=server_factory(database,port=0,provider_path=profile/'providers.dpapi',offline=False,enable_model_generation=True,drafts_path=profile/'drafts')
         server.providers.allow_manual_configuration=True
         temporary=profile/('desktop-state-'+uuid4().hex+'.tmp')
         temporary.write_text(json.dumps(dict(version=VERSION)),encoding='utf-8');os.replace(temporary,marker)

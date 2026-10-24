@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-novel-writer"
-version = "0.4.14"
+version = "0.4.17"
 description = "长篇小说的离线写作工作台与多模型协作模块骨架"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -16,3 +16,4 @@ where = ["src"]
 [tool.setuptools.package-data]
 "novel_writer.ui" = ["static/*"]
 "novel_writer.storage" = ["schema_v1.json"]
+"pypdf" = ["LICENSE", "py.typed"]

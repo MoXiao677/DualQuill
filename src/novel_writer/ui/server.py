@@ -14,6 +14,7 @@ from novel_writer.application.service import NovelService
 from novel_writer.application.skill_import import MODULE as SKILLS_MODULE, SkillLibrary
 from novel_writer.application.provider_connections import ProviderConnections
 from novel_writer.storage.sqlite_repository import ConflictError, SQLiteRepository
+from novel_writer.domain.author_scope import project_state
 
 STATIC = Path(__file__).resolve().parent / "static"
 MAX_BODY = 12 * 1024 * 1024
@@ -86,6 +87,8 @@ class LocalServer(ThreadingHTTPServer):
         self.dialogue=CreativeDialogue(self.console,self.book_ai)
         from novel_writer.application.materials import Materials
         self.materials=Materials(self.service)
+        from novel_writer.application.chat_attachments import ChatAttachments
+        self.chat_attachments = ChatAttachments(self.database_path)
         from novel_writer.application.full_book_planning import FullBookPlanning
         self.full_book_planning=FullBookPlanning(self.service)
         from novel_writer.application.body_planning import BodyPlanning
@@ -105,6 +108,8 @@ class LocalServer(ThreadingHTTPServer):
         from novel_writer.application.style_trials import TrialCoordinator
         self.style_trials=TrialCoordinator(self.task_coordinator,self.providers,self.styles,enabled=self.model_generation_enabled)
         self.token = secrets.token_urlsafe(32)
+        from novel_writer.application.chat_agent import ChatAgent
+        self.chat_agent = ChatAgent(self)
         super().__init__(("127.0.0.1", port), Handler)
         # 仅在明确备份操作时加载和创建传输暂存区。
         self._backups = None
@@ -142,6 +147,7 @@ class LocalServer(ThreadingHTTPServer):
             if backups is not None:
                 backups.close()
             self.console_background.close()
+            self.chat_agent.close()
             self.workflows.close()
             self.task_coordinator.close()
 
@@ -267,6 +273,36 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if path == "/api/session":
                 self.send_json(200, {"token": self.server.token})
+            elif path == '/api/settings/chat':
+                self.send_json(200, self.server.chat_agent.settings())
+            elif path.startswith('/api/settings/chat/attachments/') and len(path.strip('/').split('/')) == 5:
+                project_id = path.rsplit('/', 1)[-1]
+                project_id = None if project_id == 'unbound' else project_id
+                if project_id is not None:
+                    service.get(project_id)
+                self.send_json(200, self.server.chat_attachments.list(project_id))
+            elif path.startswith('/api/settings/chat/attachment/') and path.endswith('/download'):
+                parts = path.strip('/').split('/')
+                if len(parts) != 6:
+                    raise ValueError('附件下载入口无效')
+                attachment_id = parts[4]
+                record = self.server.chat_attachments.get(attachment_id)
+                project_id = record.get('project_id')
+                if project_id is not None:
+                    service.get(project_id)
+                record, body = self.server.chat_attachments.original(attachment_id, project_id)
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/octet-stream')
+                self.send_header('Content-Disposition', "attachment; filename*=UTF-8''" + quote(record['filename'], safe=''))
+                self.send_header('Content-Length', str(len(body)))
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('X-Content-Type-Options', 'nosniff')
+                self.end_headers()
+                self.wfile.write(body)
+            elif path == '/api/settings/chat/jobs':
+                self.send_json(200, self.server.chat_agent.listing(None))
+            elif path.startswith('/api/settings/chat/jobs/') and len(path.strip('/').split('/')) == 5:
+                self.send_json(200, self.server.chat_agent.status(path.rsplit('/', 1)[-1]))
             elif path.startswith('/api/projects/') and path.endswith('/drafts') and len(path.strip('/').split('/'))==4:
                 from novel_writer.application.drafts import DraftError
                 parts=path.strip('/').split('/');self.server.service.get(parts[2])
@@ -482,6 +518,7 @@ class Handler(BaseHTTPRequestHandler):
                           "/provider_views.js": ("provider_views.js", "text/javascript"),
                           "/sampling.js": ("sampling.js", "text/javascript"),
                           "/creative_dialogue.js": ("creative_dialogue.js", "text/javascript"),
+                          "/chat_workspace.js": ("chat_workspace.js", "text/javascript"),
                           "/creation_presets.js": ("creation_presets.js", "text/javascript"),
                           "/workflow_editor.js": ("workflow_editor.js", "text/javascript"),
                           "/styles.js": ("styles.js", "text/javascript"),
@@ -555,6 +592,67 @@ class Handler(BaseHTTPRequestHandler):
             if type(payload) is not dict:
                 raise ValueError("提交内容必须是对象")
             path = urlsplit(self.path).path
+            if path == '/api/settings/chat/attachment/local-path':
+                if set(payload) != {'path', 'project_id', 'operation_id'}:
+                    raise ValueError('本地路径导入字段无效')
+                project_id = payload['project_id']
+                if project_id is not None:
+                    state = self.server.service.get(project_id)
+                    if project_state(state) != 'active': raise ValueError('只能向活动小说导入附件')
+                if type(payload['path']) is not str or type(payload['operation_id']) is not str:
+                    raise ValueError('本地路径或操作编号无效')
+                self.send_json(201, {'attachments': self.server.chat_attachments.import_local_path(payload['path'], project_id, payload['operation_id'])})
+                return
+            if path == '/api/settings/chat/attachment':
+                if set(payload) != {'filename', 'content_base64', 'project_id', 'operation_id'}:
+                    raise ValueError('附件字段无效')
+                project_id = payload['project_id']
+                if project_id is not None:
+                    if type(project_id) is not str or not project_id:
+                        raise ValueError('小说编号无效')
+                    state = self.server.service.get(project_id)
+                    if project_state(state) != 'active':
+                        raise ValueError('只能向活动小说上传附件')
+                if type(payload['content_base64']) is not str or len(payload['content_base64']) > 4 * ((8 * 1024 * 1024 + 2) // 3):
+                    raise ValueError('附件必须不超过 8 MiB')
+                if type(payload['operation_id']) is not str or not payload['operation_id']:
+                    raise ValueError('上传操作编号无效')
+                try:
+                    raw = base64.b64decode(payload['content_base64'], validate=True)
+                except (ValueError, TypeError) as error:
+                    raise ValueError('附件 Base64 编码无效') from error
+                self.send_json(201, self.server.chat_attachments.save(payload['filename'], raw, project_id, payload['operation_id']))
+                return
+            if path.startswith('/api/settings/chat/attachment/'):
+                parts = path.strip('/').split('/')
+                if len(parts) != 6 or parts[5] not in ('archive', 'restore') or set(payload) != {'project_id'}:
+                    raise ValueError('附件操作字段无效')
+                project_id = payload['project_id']
+                if project_id is not None:
+                    if type(project_id) is not str or not project_id:
+                        raise ValueError('小说编号无效')
+                    self.server.service.get(project_id)
+                record = self.server.chat_attachments.get(parts[4])
+                if record.get('project_id') != project_id:
+                    raise ValueError('附件不属于当前小说')
+                method = self.server.chat_attachments.archive if parts[5] == 'archive' else self.server.chat_attachments.restore
+                self.send_json(200, method(parts[4], project_id))
+                return
+            if path == '/api/settings/chat/config':
+                self.send_json(200, self.server.chat_agent.configure(payload));return
+            if path == '/api/settings/chat/start':
+                self.send_json(202, self.server.chat_agent.start(payload));return
+            if path == '/api/settings/chat/entity':
+                self.send_json(200, self.server.chat_agent.manual_lifecycle(payload));return
+            if path.startswith('/api/settings/chat/jobs/'):
+                parts = path.strip('/').split('/')
+                if len(parts) != 6 or parts[-1] not in ('cancel', 'confirm'):
+                    raise ValueError('无效的聊天任务操作')
+                if parts[-1] == 'cancel' and payload == {}:
+                    self.send_json(200, self.server.chat_agent.cancel(parts[-2]));return
+                if parts[-1] == 'confirm' and set(payload) == {'accepted'}:
+                    self.send_json(200, self.server.chat_agent.confirm(parts[-2], payload['accepted']));return
+                raise ValueError('任务操作字段无效')
             if path == '/api/settings/local-data/preview':
                 if payload:raise ValueError('本地诊断预览不接受文件路径或其他字段')
                 self.server.local_data.offline=self.server.offline

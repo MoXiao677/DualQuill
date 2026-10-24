@@ -1576,9 +1576,48 @@ h1 { font-size:13px; font-weight:500 }
 :root[data-theme=light] #workbench.chat-mode .chat-wordmark span { color:#c9c9c4 }
 
 /* ===== 对话优先层（2026-10-24）: chat 视图收成一条干净的对话流 ===== */
-#workbench.chat-mode { --nav-width:0px; --dock-left:0px; --dock-right:0px; --divider-left:0px; --divider-right:0px }
-#workbench.chat-mode #tabs { display:none }
-#workbench.chat-mode .sidebar,
-#workbench.chat-mode .context-panel { display:none }
+#workbench.chat-mode { --nav-width:0px !important; --dock-left:0px !important; --dock-right:0px !important; --divider-left:0px !important; --divider-right:0px !important; grid-template-columns:0 0 0 minmax(0,1fr) 0 0 !important }
+#workbench.chat-mode:not(.modules-open) #tabs { display:none }
+#workbench.chat-mode:not(.left-drawer) .sidebar,
+#workbench.chat-mode:not(.right-drawer) .context-panel { display:none }
+#workbench.chat-mode .console-sessions { display:none }
+#workbench.chat-mode #console-root { flex:1 1 auto; width:100%; display:block; border:0; box-shadow:none; background:transparent }
+#workbench.chat-mode .console-layout { display:block; padding:0; width:100% }
 #workbench.chat-mode .console-messages { display:block; margin:0 }
-#workbench.chat-mode .console-main > .chat-home { padding:12vh 0 0 }
+#workbench.chat-mode .console-main > .chat-home { padding:6vh 0 0 }
+
+/* Natural chat workspace. Existing author styling above is preserved. */
+#workbench.chat-mode #agent-chat { flex:1 1 auto; width:100%; border:0; background:transparent; box-shadow:none; margin:0 auto; max-width:960px; }
+.agent-thread { display:flex; flex-direction:column; gap:24px; padding:20px 8px; }
+.agent-message { padding:18px 22px; border-radius:12px; background:var(--panel,#151515); overflow-wrap:anywhere; }
+.agent-message[data-role="author"] { background:#202027; margin-left:12%; }
+.agent-message strong { display:block; margin-bottom:10px; color:#c8bddf; }
+.agent-message div { white-space:pre-wrap; line-height:1.85; }
+.agent-status { margin:12px 8px; padding:16px 20px; border:1px solid #393442; border-radius:10px; background:#17151d; }
+.agent-status p { white-space:pre-wrap; }
+.agent-status button { margin:10px 8px 0 0; }
+.agent-shelf-row { display:flex; align-items:center; gap:4px; }
+.agent-shelf-row .book-link { min-width:0; flex:1; }
+.agent-shelf-row > .quiet { flex:0 0 auto; font-size:11px; padding:5px; }
+.agent-advanced summary { cursor:pointer; padding:12px 8px; font-size:12px; color:#999; }
+#agent-api-form { max-width:720px; display:grid; gap:18px; }
+#agent-api-form label { display:grid; gap:8px; }
+#agent-api-form input,#agent-api-form select { width:100%; box-sizing:border-box; }
+#agent-api-form details { border-top:1px solid #333; padding-top:12px; }
+#agent-api-form details label { margin:12px 0; }
+
+/* Attachment composer additions; preserve existing styles above. */
+.chat-attachments { margin:8px 0; font-size:12px; overflow-wrap:anywhere; }
+.chat-attachments .attachment-privacy { color:var(--muted); line-height:1.6; margin:6px 0; }
+.chat-attachments ul { list-style:none; padding:0; margin:6px 0; max-height:180px; overflow:auto; }
+.chat-attachments li { display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding:6px 0; border-bottom:1px solid var(--line); }
+.chat-attachments li span { flex:1 1 180px; min-width:0; }
+.chat-attachments button { font-size:11px; padding:4px 7px; }
+.chat-attachments summary { cursor:pointer; }
+.attachment-dragover .composer-surface { outline:2px dashed var(--accent,#9186be); outline-offset:3px; }
+.chat-local-path { display:flex; gap:6px; padding:0 12px 8px; }
+.chat-local-path input { flex:1; min-width:0; font-size:12px; }
+.chat-local-path button { font-size:11px; white-space:nowrap; }
+.agent-import-report { margin:8px; padding:12px; border:1px solid var(--line); border-radius:8px; font-size:12px; overflow-wrap:anywhere; }
+.agent-import-report ul { margin:6px 0; padding-left:20px; }
+@media(max-width:600px) { .chat-local-path { flex-wrap:wrap; } .composer-tools { flex-wrap:wrap; } }

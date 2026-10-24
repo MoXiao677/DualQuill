@@ -2,6 +2,7 @@
 const APP_URL = 'novel://app/';
 const ASSETS = new Map(Object.entries({
   '/':'index.html','/app.js':'app.js','/api.js':'api.js','/state.js':'state.js',
+  '/chat_workspace.js':'chat_workspace.js',
   '/layout.js':'layout.js','/views.js':'views.js','/knowledge.js':'knowledge.js','/i18n.js':'i18n.js','/provider_views.js':'provider_views.js',
   '/model_tasks.js':'model_tasks.js','/comparison_views.js':'comparison_views.js',
   '/deep_reviews.js':'deep_reviews.js',
@@ -59,7 +60,7 @@ function assertSender(event,owner) {
   if(!owner||event.sender!==owner||event.senderFrame!==owner.mainFrame||event.senderFrame.url!==APP_URL)throw Error('Untrusted desktop IPC');
 }
 function downloadPath(value){
-  if(typeof value!=='string'||!(/^\/api\/projects\/[a-zA-Z0-9_-]+\/export\/(book|volume|chapter)\/(txt|md)(\/[a-zA-Z0-9_-]+)?$/.test(value)||/^\/api\/backups\/download\/[a-zA-Z0-9_-]+$/.test(value)))throw Error('Blocked download');
+  if(typeof value!=='string'||!(/^\/api\/projects\/[a-zA-Z0-9_-]+\/export\/(book|volume|chapter)\/(txt|md)(\/[a-zA-Z0-9_-]+)?$/.test(value)||/^\/api\/backups\/download\/[a-zA-Z0-9_-]+$/.test(value)||/^\/api\/settings\/chat\/attachment\/[a-f0-9-]{36}\/download$/.test(value)))throw Error('Blocked download');
   classify(APP_URL.slice(0,-1)+value,'GET');return value;
 }
 module.exports={APP_URL,ASSETS,CSP,classify,proxyHeaders,assertSender,downloadPath};

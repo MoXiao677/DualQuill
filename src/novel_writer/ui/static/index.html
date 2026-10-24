@@ -53,10 +53,10 @@
         <div class="composer-scope"><div id="chat-context-summary" class="chat-context-summary" aria-live="polite"></div><button id="switch-prompt-scope" type="button" hidden>查看未绑定需求</button><button id="clear-chat-prompt" aria-label="清空当前需求" type="button" disabled>清空</button></div>
         <div class="composer-surface">
           <label class="sr-only" for="chat-input">创作需求</label>
-          <textarea id="chat-input" rows="3" placeholder="描述你的剧情构思、写作要求或修改意见…" aria-describedby="chat-availability chat-storage-note"></textarea>
-          <div class="composer-tools"><button id="add-chat-context" aria-label="添加上下文" type="button">＋ <span>添加上下文</span></button><button id="chat-model" type="button" aria-label="模型配置入口">模型未启用 <span aria-hidden="true">⌄</span></button><span class="composer-shortcut">Enter 换行</span><button id="chat-stop" aria-label="停止生成" type="button" disabled title="此输入未执行生成；任务取消请在任务页操作">■</button><button id="chat-send" aria-label="发送创作需求" type="submit" disabled title="此对话输入仅准备需求，尚不执行模型请求">↑</button></div>
+          <textarea id="chat-input" rows="3" placeholder="描述你的剧情构思、写作要求或修改意见…" aria-describedby="chat-availability chat-storage-note chat-keyboard-hint"></textarea><div class="chat-local-path"><input id="chat-local-path-input" type="text" placeholder="可选：输入本地文件或文件夹绝对路径"><button id="chat-local-path" type="button">导入本地路径</button></div>
+          <div class="composer-tools"><button id="add-chat-context" aria-label="添加上下文" type="button" hidden>添加上下文</button><button id="chat-model" type="button" aria-label="模型配置入口">API 设置 <span aria-hidden="true">⌄</span></button><span id="chat-keyboard-hint" class="composer-shortcut">Enter发送 · Shift+Enter换行</span><button id="chat-stop" aria-label="停止生成" type="button" disabled title="停止当前创作，已保存内容保留">■</button><button id="chat-send" aria-label="发送创作需求" type="submit" title="发送并自动更新小说">↑</button></div>
         </div>
-        <div class="composer-note"><span id="chat-availability">此处准备需求；模型任务从章节页进入</span><span id="chat-storage-note">需求仅保留在本窗口，刷新前请自行留存</span></div>
+        <div class="composer-note"><span id="chat-availability">通过聊天创作，资料与正文自动保存</span><span id="chat-storage-note">已发送对话保存在本机；未发送输入请先留存</span></div>
       </form>
     </main>
     <div id="right-resize" class="resize-handle" role="separator" aria-label="上下文宽度" aria-orientation="vertical" tabindex="0" aria-valuemin="220" aria-valuemax="380" aria-valuenow="300"></div>

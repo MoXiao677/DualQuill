@@ -15,7 +15,11 @@ function sourceFiles(project){
       if(entry.name.endsWith('.py')||['schema_v1.json','schema_v2.json'].includes(entry.name)&&path.basename(directory)==='storage'||path.basename(directory)==='static'&&staticNames.has(entry.name))result.push(path.relative(project,file).split(path.sep).join('/'));
     }
   }
-  walk(path.join(project,'src','novel_writer'));return result.sort();
+  walk(path.join(project,'src','novel_writer'));
+  const vendor=path.join(project,'src','pypdf');
+  if(fs.existsSync(vendor))walk(vendor);
+  for(const file of ['src/pypdf/LICENSE','src/pypdf/py.typed'])if(fs.existsSync(path.join(project,file)))result.push(file);
+  return result.sort();
 }
 function verifyFile(file,expected){
   const actual=crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');

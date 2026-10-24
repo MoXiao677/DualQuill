@@ -1,4 +1,11 @@
-AI-Novel-Writer desktop 0.4.14
+AI-Novel-Writer desktop 0.4.17
+
+Bundled PDF parser:
+- pypdf 6.10.0: BSD-3-Clause. Copyright remains with the upstream authors.
+  The complete upstream license is retained at src/pypdf/LICENSE in source
+  and pypdf/LICENSE in the packaged Python source tree. Preserve this license
+  and pypdf/py.typed when packaging. Source: https://github.com/py-pdf/pypdf
+  Used only for local text extraction; no provider request occurs during parsing.
 
 Application: MIT License. Copyright (c) 2026 AI-Novel-Writer Contributors.
 The complete application license is distributed as resources/LICENSE.application.txt.
