@@ -106,7 +106,7 @@ const labels={running:'创作中',completed:'已完成',failed:'未完成',cance
 const reviewLabels={reviewing:'审核中',passed:'通过',failed:'未通过',unverified:'未核实',stale:'正文已变更，需重新审核'};
 function reviewStatus(job){
  const reports=job.chapter_reviews||[],counts=job.review_counts||{};
- return `<p>生成 ${h(job.generated_count||0)} · 保存 ${h(job.saved_count||0)} · 已审核 ${h(job.reviewed_count||0)} · 通过 ${h(job.passed_count||0)} · 未通过 ${h(counts.failed||0)} · 未核实 ${h(counts.unverified||0)} · 已过期 ${h(counts.stale||0)}</p><p>审核状态：${h(reviewLabels[job.review_status]||'尚未审核')}</p>${reports.map(report=>`<details><summary>第${h(report.number)}章 · ${h(reviewLabels[report.status]||report.status)} · 第${h((report.iteration||0)+1)}轮</summary><p>审核：${h(report.reviewer?.name||'')} · ${h(report.reviewer?.model_id||'')} · 源版本 ${h(report.source_revision)}</p><p>正文 SHA256：${h(report.content_sha256)}</p>${report.material_id?`<p>报告已保存至资料库：${h(report.material_id)}</p>`:''}${report.error?`<p>${h(report.error)}</p>`:''}<ul>${(report.issues||[]).map(issue=>`<li>${h(issue.severity)} / ${h(issue.category)}：${h(issue.message)}<blockquote>${h(issue.evidence)}</blockquote></li>`).join('')}</ul></details>`).join('')}`;
+ return `<p>正文章节：生成 ${h(job.generated_count||0)} · 保存 ${h(job.saved_count||0)} · 已审核 ${h(job.reviewed_count||0)} · 通过 ${h(job.passed_count||0)} · 未通过 ${h(counts.failed||0)} · 未核实 ${h(counts.unverified||0)} · 已过期 ${h(counts.stale||0)}</p><p>审核状态：${h(reviewLabels[job.review_status]||'尚未审核')}</p>${reports.map(report=>`<details><summary>第${h(report.number)}章 · ${h(reviewLabels[report.status]||report.status)} · 第${h((report.iteration||0)+1)}轮</summary><p>审核：${h(report.reviewer?.name||'')} · ${h(report.reviewer?.model_id||'')} · 源版本 ${h(report.source_revision)}</p><p>正文 SHA256：${h(report.content_sha256)}</p>${report.material_id?`<p>报告已保存至资料库：${h(report.material_id)}</p>`:''}${report.error?`<p>${h(report.error)}</p>`:''}${report.diagnostics!=null?`<details><summary>审核诊断</summary><pre>${h(typeof report.diagnostics==='string'?report.diagnostics:JSON.stringify(report.diagnostics,null,2))}</pre></details>`:''}${report.raw_response!=null?`<details><summary>审核原始响应</summary><pre>${h(report.raw_response)}</pre></details>`:''}<ul>${(report.issues||[]).map(issue=>`<li>${h(issue.severity)} / ${h(issue.category)}：${h(issue.message)}<blockquote>${h(issue.evidence)}</blockquote></li>`).join('')}</ul></details>`).join('')}`;
 }
 
 export async function renderAgentChat(workspace){
@@ -177,26 +177,39 @@ export async function sendAgentMessage(text,projectId,revision){
 
 function poll(job){
  if(timer)clearTimeout(timer);
- timer=setTimeout(async()=>{
+ const currentHooks=hooks;
+ const pollTimer=setTimeout(async()=>{
+  const isCurrent=()=>timer===pollTimer&&hooks===currentHooks&&currentHooks?.project()===job.project_id;
+  if(!isCurrent())return;
   try{
    const result=await api(base+'/jobs/'+encodeURIComponent(job.id));
-   if(hooks?.project()!==job.project_id)return;
-   if(result.project_id!==job.project_id){await hooks.refresh(result.project_id);return;}
+   if(!isCurrent())return;
    activeJob=result.status==='running'?result:null;
    composerState(Boolean(activeJob));
+   if(result.project_id!==job.project_id){
+    await currentHooks.refresh(result.project_id);
+    if(timer===pollTimer)timer=null;
+    return;
+   }
    const progress=document.querySelector('#agent-progress');
    if(progress)progress.textContent=result.error||result.progress;
    const counts=document.querySelector('#agent-counts');
    if(counts)counts.textContent=`模型调用 ${result.calls} 次 · 完成 ${result.actions} 项操作`;
+   const label=document.querySelector('#agent-chat .agent-status > strong');
+   if(label)label.textContent=labels[result.status]||result.status;
    if(activeJob){poll(result);return;}
-   await hooks.refresh(job.project_id);
-   hooks.notice(result.error||result.reply||'操作已保存',result.status==='failed');
+   await currentHooks.refresh(job.project_id);
+   if(hooks===currentHooks&&currentHooks.project()===job.project_id)currentHooks.notice(result.error||result.reply||'操作已保存',result.status==='failed');
+   if(timer===pollTimer)timer=null;
   }catch(error){
-   composerState(false);
+   if(!isCurrent())return;
+   composerState(Boolean(activeJob));
    const progress=document.querySelector('#agent-progress');
-   if(progress)progress.textContent='暂时无法读取进度：'+error.message+'。请重新读取，不要重复发送。';
+   if(progress)progress.textContent='暂时无法读取进度：'+error.message+'。正在自动重试状态读取，请勿重复发送。';
+   poll(job);
   }
  },1200);
+ timer=pollTimer;
 }
 
 export function bindAgentPage(currentHooks){
