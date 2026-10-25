@@ -103,6 +103,11 @@ const base='/api/settings/chat';
 let timer=null,activeJob=null,pending=null,hooks=null;
 const post=(url,value)=>api(url,{method:'POST',body:JSON.stringify(value)});
 const labels={running:'创作中',completed:'已完成',failed:'未完成',cancelled:'已停止',interrupted:'上次任务已中断',awaiting_confirmation:'等待删除确认'};
+const reviewLabels={reviewing:'审核中',passed:'通过',failed:'未通过',unverified:'未核实',stale:'正文已变更，需重新审核'};
+function reviewStatus(job){
+ const reports=job.chapter_reviews||[],counts=job.review_counts||{};
+ return `<p>生成 ${h(job.generated_count||0)} · 保存 ${h(job.saved_count||0)} · 已审核 ${h(job.reviewed_count||0)} · 通过 ${h(job.passed_count||0)} · 未通过 ${h(counts.failed||0)} · 未核实 ${h(counts.unverified||0)} · 已过期 ${h(counts.stale||0)}</p><p>审核状态：${h(reviewLabels[job.review_status]||'尚未审核')}</p>${reports.map(report=>`<details><summary>第${h(report.number)}章 · ${h(reviewLabels[report.status]||report.status)} · 第${h((report.iteration||0)+1)}轮</summary><p>审核：${h(report.reviewer?.name||'')} · ${h(report.reviewer?.model_id||'')} · 源版本 ${h(report.source_revision)}</p><p>正文 SHA256：${h(report.content_sha256)}</p>${report.material_id?`<p>报告已保存至资料库：${h(report.material_id)}</p>`:''}${report.error?`<p>${h(report.error)}</p>`:''}<ul>${(report.issues||[]).map(issue=>`<li>${h(issue.severity)} / ${h(issue.category)}：${h(issue.message)}<blockquote>${h(issue.evidence)}</blockquote></li>`).join('')}</ul></details>`).join('')}`;
+}
 
 export async function renderAgentChat(workspace){
  const project=workspace?.document.project.id;
@@ -115,14 +120,16 @@ export async function renderAgentChat(workspace){
  const thread=messages.length?'<div class="agent-thread">'+messages.map(m=>`<article class="agent-message" data-role="${h(m.role)}"><strong>${m.role==='author'?'你':'创作助手'}</strong><div>${h(m.text)}</div></article>`).join('')+'</div>':`<div class="chat-home"><div class="chat-home-inner"><div class="chat-wordmark">D<span>DUALQUILL</span></div><h2>${project?'继续这本书。':'从一句话开始写书。'}</h2><p>告诉我想写什么、改哪里或继续哪一章。<br>人物、设定、大纲和章节会自动保存。</p></div></div>`;
  const status=job?`<section class="agent-status" role="status"><strong>${h(labels[job.status]||job.status)}</strong><p id="agent-progress">${h(job.error||job.progress)}</p><small id="agent-counts">模型调用 ${job.calls} 次 · 完成 ${job.actions} 项操作</small>${job.status==='awaiting_confirmation'?`<p>将整本书移入回收站，正文和历史保留。</p><button type="button" data-agent-confirm="${h(job.id)}" data-accepted="true">确认删除整本书</button><button type="button" data-agent-confirm="${h(job.id)}" data-accepted="false">取消</button>`:''}</section>`:'';
  const receipt=job?.reply&&messages.at(-1)?.text!==job.reply&&job.status!=='running'?`<p class="agent-receipt">${h(job.reply)}</p>`:'';
- return `<section id="agent-chat" class="panel agent-chat">${thread}${status}${receipt}</section>`;
+  return `<section id="agent-chat" class="panel agent-chat">${thread}${status}${job?reviewStatus(job):''}${receipt}</section>`;
 }
 
 export async function renderAgentSettings(existing){
  const settings=existing||await api(base);
  const selected=settings.connections.find(c=>c.id===settings.connection_id);
  const options=settings.connections.map(c=>`<option value="${h(c.id)}" ${c.id===settings.connection_id?'selected':''}>${h(c.name)} · ${h(c.model_id)}</option>`).join('');
- return `<section class="panel"><h2>写作 API</h2><p>保存一个连接后，回到聊天即可创作。资料和正文自动保存，每次修改保留历史。</p>${settings.offline?'<p>当前为手动模式。<button type="button" id="agent-enable-models">开启模型创作</button></p>':''}<form id="agent-api-form" autocomplete="off"><label>已保存连接<select name="connection_id" id="agent-connection"><option value="">添加新连接</option>${options}</select></label><label>API 地址<input name="base_url" type="url" value="${h(selected?.base_url||'')}" placeholder="https://example.com/v1" required></label><label>API 密钥<input name="api_key" type="password" autocomplete="new-password" placeholder="${selected?'已保存，留空保留原密钥':'输入 API 密钥'}"></label><label>模型编号<input name="model_id" value="${h(selected?.model_id||'')}" placeholder="例如 gemini-4-argon 或 gpt-6.1-sol" required></label><details><summary>连接兼容选项（通常不用改）</summary><label>连接名称<input name="name" value="${h(selected?.name||'写作 API')}"></label><label>接口类型<select name="protocol"><option value="openai-chat">OpenAI 兼容 / 中转站</option><option value="gemini-content" ${selected?.protocol==='gemini-content'?'selected':''}>Gemini 原生</option><option value="anthropic-messages" ${selected?.protocol==='anthropic-messages'?'selected':''}>Anthropic 原生</option></select></label><label>OpenAI 请求方式<select name="wire_mode">${[['auto','自动选择'],['responses','Responses'],['chat','Chat Completions']].map(([id,label])=>`<option value="${id}" ${settings.wire_mode===id?'selected':''}>${label}</option>`).join('')}</select></label></details><button class="primary" type="submit">保存并使用这个 API</button><p id="agent-api-status" role="status"></p></form><p class="hint">密钥由本机 Windows 账户加密保存。保存不会发出模型请求；发送聊天后按所选站点规则消耗额度。</p><p class="hint">大段创作会逐章执行；可随时点输入框旁的停止按钮。删除内容可以恢复。</p></section>`;
+ const reviewerOptions=settings.connections.filter(c=>c.id!==settings.connection_id).map(c=>`<option value="${h(c.id)}" ${c.id===settings.reviewer_connection_id?'selected':''}>${h(c.name)} · ${h(c.model_id)}</option>`).join('');
+ const reviewerForm=`<section class="panel"><h2>独立审核</h2><form id="agent-reviewer-form"><label>审核连接<select name="reviewer_connection_id" required><option value="">请选择独立连接</option>${reviewerOptions}</select></label><button type="submit">保存审核连接</button><p id="agent-reviewer-status" role="status"></p></form><p class="hint">只保存审核选择，不切换写作 API，也不发送请求。生成或审核章节前必须有不同于写作连接的有效审核连接。最多自动修订两次；失败停止并保留正文与审核报告。可在聊天中请求“审核已保存的第1至10章，通过的章节不要重写”。</p></section>`;
+ return `<section class="panel"><h2>写作 API</h2><p>保存一个连接后，回到聊天即可创作。资料和正文自动保存，每次修改保留历史。</p>${settings.offline?'<p>当前为手动模式。<button type="button" id="agent-enable-models">开启模型创作</button></p>':''}<form id="agent-api-form" autocomplete="off"><label>已保存连接<select name="connection_id" id="agent-connection"><option value="">添加新连接</option>${options}</select></label><label>API 地址<input name="base_url" type="url" value="${h(selected?.base_url||'')}" placeholder="https://example.com/v1" required></label><label>API 密钥<input name="api_key" type="password" autocomplete="new-password" placeholder="${selected?'已保存，留空保留原密钥':'输入 API 密钥'}"></label><label>模型编号<input name="model_id" value="${h(selected?.model_id||'')}" placeholder="例如 gemini-4-argon 或 gpt-6.1-sol" required></label><details><summary>连接兼容选项（通常不用改）</summary><label>连接名称<input name="name" value="${h(selected?.name||'写作 API')}"></label><label>接口类型<select name="protocol"><option value="openai-chat">OpenAI 兼容 / 中转站</option><option value="gemini-content" ${selected?.protocol==='gemini-content'?'selected':''}>Gemini 原生</option><option value="anthropic-messages" ${selected?.protocol==='anthropic-messages'?'selected':''}>Anthropic 原生</option></select></label><label>OpenAI 请求方式<select name="wire_mode">${[['auto','自动选择'],['responses','Responses'],['chat','Chat Completions']].map(([id,label])=>`<option value="${id}" ${settings.wire_mode===id?'selected':''}>${label}</option>`).join('')}</select></label></details><button class="primary" type="submit">保存并使用这个 API</button><p id="agent-api-status" role="status"></p></form><p class="hint">密钥由本机 Windows 账户加密保存。保存不会发出模型请求；发送聊天后按所选站点规则消耗额度。</p><p class="hint">大段创作会逐章执行；可随时点输入框旁的停止按钮。删除内容可以恢复。</p></section>${reviewerForm}`;
 }
 
 const localPathOperations=new Map();
@@ -206,8 +213,16 @@ export function bindAgentPage(currentHooks){
  });
  const stop=document.querySelector('#chat-stop');
  if(stop)stop.onclick=async()=>{if(!activeJob)return;try{await post(base+'/jobs/'+activeJob.id+'/cancel',{});stop.disabled=true;hooks.notice('已请求停止，已保存内容保留。');}catch(error){hooks.notice(error.message,true);}};
- const form=document.querySelector('#agent-api-form');
- if(!form)return;
+  const reviewerForm=document.querySelector('#agent-reviewer-form');
+  reviewerForm?.addEventListener('submit',async event=>{
+   event.preventDefault();event.stopPropagation();
+   const button=reviewerForm.querySelector('[type=submit]');button.disabled=true;
+   try{const reviewer_connection_id=reviewerForm.elements.reviewer_connection_id.value;await post(base+'/config',{reviewer_connection_id});await hooks.refresh(hooks.project());hooks.notice('独立审核连接已保存。');}
+   catch(error){reviewerForm.querySelector('#agent-reviewer-status').textContent=error.message;hooks.notice(error.message,true);}
+   finally{button.disabled=false;}
+  });
+  const form=document.querySelector('#agent-api-form');
+  if(!form)return;
  form.addEventListener('submit',async event=>{
   event.preventDefault();event.stopPropagation();
   const values=Object.fromEntries(new FormData(form));

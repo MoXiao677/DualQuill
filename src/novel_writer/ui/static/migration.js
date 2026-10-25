@@ -8,9 +8,9 @@ export function renderMigration(workspace){
   '<div class="field"><label for="migration-encoding">编码</label><select id="migration-encoding"><option value="auto">自动：UTF-8/BOM 优先，失败后严格 GB18030</option><option value="utf-8">UTF-8</option><option value="utf-8-sig">UTF-8 BOM</option><option value="gb18030">GB18030（手动覆盖）</option></select></div>'+
   '<button id="migration-preview" type="button">识别并预览分章（不写入）</button><p id="migration-status" role="status"></p><div id="migration-preview-result"></div></section>'+
   '<section id="migration-export" class="panel"><h2>导出已保存内容</h2><p>只导出数据库已保存正文，未保存的窗口草稿和本地恢复草稿不会包含。编码 UTF-8。</p>'+
-  '<div class="field-grid"><div class="field"><label for="export-scope">范围</label><select id="export-scope"><option value="book">全书</option><option value="volume">分卷</option><option value="chapter">单章</option></select></div><div class="field"><label for="export-format">格式</label><select id="export-format"><option value="txt">TXT</option><option value="md">Markdown</option></select></div></div>'+
-  '<div class="field"><label for="export-volume">分卷</label><select id="export-volume" '+(volumes.length?'':'disabled')+'>'+volumes.map(v=>'<option value="'+v.number+'">'+h(v.title)+'</option>').join('')+'</select></div>'+
-  '<div class="field"><label for="export-chapter">章节</label><select id="export-chapter" '+(chapters.length?'':'disabled')+'>'+chapters.map(c=>'<option value="'+h(c.id)+'">第'+c.number+'章 · '+h(c.title)+'</option>').join('')+'</select></div>'+
+   '<div class="field-grid"><div class="field"><label for="export-scope">范围</label><select id="export-scope"><option value="book">整本</option><option value="volume">分卷</option><option value="chapter">单章</option></select></div><div class="field"><label for="export-format">格式</label><select id="export-format"><option value="txt">TXT</option><option value="md">Markdown</option></select></div></div>'+
+   '<div class="field" id="export-volume-field"><label for="export-volume">分卷</label><select id="export-volume" '+(volumes.length?'':'disabled')+'>'+volumes.map(v=>'<option value="'+v.number+'">'+h(v.title)+'</option>').join('')+'</select></div>'+
+   '<div class="field" id="export-chapter-field"><label for="export-chapter">章节</label><select id="export-chapter" '+(chapters.length?'':'disabled')+'>'+chapters.map(c=>'<option value="'+h(c.id)+'">第'+c.number+'章 · '+h(c.title)+'</option>').join('')+'</select></div>'+
   '<button id="export-download" type="button" '+(chapters.length?'':'disabled')+'>下载导出文件</button><p id="export-status" role="status"></p></section></div>';
 }
 async function fileBase64(file){
@@ -20,7 +20,8 @@ async function fileBase64(file){
 }
 export function bindMigration(root,workspace,hooks){
  if(!root||root.dataset.bound)return;root.dataset.bound='true';const base='/api/projects/'+encodeURIComponent(workspace.document.project.id);let busy=false;
- const run=async fn=>{if(busy)return;busy=true;hooks.busy(true);try{await fn();}catch(error){hooks.notice(error.message,true);}finally{busy=false;hooks.busy(false);}};
+  const scope=root.querySelector('#export-scope');const updateExportFields=()=>{const value=scope.value;root.querySelector('#export-volume-field').hidden=value!=='volume';root.querySelector('#export-chapter-field').hidden=value!=='chapter';};scope.addEventListener('change',updateExportFields);updateExportFields();
+  const run=async fn=>{if(busy)return;busy=true;hooks.busy(true);try{await fn();}catch(error){hooks.notice(error.message,true);}finally{busy=false;hooks.busy(false);}};
  root.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;
   if(button.id==='migration-preview'){void run(async()=>{
    const file=root.querySelector('#migration-file').files[0];state.base64=await fileBase64(file);state.filename=file.name;state.encoding=root.querySelector('#migration-encoding').value;

@@ -1251,7 +1251,8 @@ document.addEventListener('click', async event => {
   else if(button.id==='start-draft'||button.id==='start-continuation'){chapterWritingMode=button.id==='start-draft'?'draft':'continue';await navigate('compose');}
   else if(button.id==='open-chapter-planning'){chapterPlanningMode='brainstorm';await navigate('planning');}
   else if(button.id==='open-scene-expansion'){const editor=$('#edit-content');if(editor&&editor.selectionEnd>editor.selectionStart){const text=editor.value;expansionRange=[Array.from(text.slice(0,editor.selectionStart)).length,Array.from(text.slice(0,editor.selectionEnd)).length];}else expansionRange=null;await navigate('expansion');}
-  else if(button.id==='open-import-export')await navigate('migration');
+  else if(button.id==='open-export'){if(!workspace){notify('请先打开小说。',true);return;}await navigate('migration');$('#migration-export')?.scrollIntoView({block:'start'});}
+   else if(button.id==='open-import-export')await navigate('migration');
   else if(button.id==='move-chapter-up'||button.id==='move-chapter-down'){
     const direction=button.id==='move-chapter-up'?'up':'down';if(!window.confirm('确认将当前章节'+(direction==='up'?'上移':'下移')+'一位？正文、版本、细纲与IDEA不会改变。'))return;
     if(await perform('move_chapter',{chapter_id:selectedChapter,direction,confirmed:true}))await renderMain();
