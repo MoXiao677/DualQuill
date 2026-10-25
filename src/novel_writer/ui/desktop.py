@@ -14,7 +14,7 @@ from contextlib import closing
 
 from novel_writer.ui.server import Handler, create_server
 
-VERSION='0.4.19'
+VERSION='0.4.20'
 
 def start_profile(profile, *, database=None, server_factory=create_server):
     """Snapshot before opening an older profile; roll back a failed initialization."""

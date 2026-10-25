@@ -23,7 +23,7 @@
 
 ---
 
-## 0.4.19：配置自己的 API 后通过聊天创作
+## 0.4.20：配置自己的 API 后通过聊天创作
 
 Windows 下载：[最新版本](https://github.com/MoXiao677/DualQuill/releases/latest)。解压免安装 ZIP 后运行 `DualQuill.exe`，或使用安装器。
 
@@ -105,7 +105,7 @@ tests/               # 1300+ 项 Python 测试 + Node 端到端
 
 ## 📌 状态与边界
 
-当前版本 **0.4.19**。本版通过 Python/JavaScript 语法检查和 Windows 打包检查；历史版本的测试数字不代表本版全量回归结果。
+当前版本 **0.4.20**。本版通过 Python/JavaScript 语法检查和 Windows 打包检查；历史版本的测试数字不代表本版全量回归结果。
 
 已知边界（不粉饰）：
 
