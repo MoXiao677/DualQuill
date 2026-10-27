@@ -23,6 +23,7 @@ else {
   app.on('before-quit',event=>{if(finishing)return;event.preventDefault();if(window&&!window.isDestroyed())window.close();else void finish();});
   app.on('window-all-closed',()=>{void finish();});
   app.whenReady().then(start).catch(async()=>{
+    if(finishing)return;
     if(!hidden)await dialog.showMessageBox({type:'error',title:tr('startupTitle'),message:tr('startup')});
     else process.stderr.write('DESKTOP_START_FAILED\n');
     await finish(1);
@@ -32,7 +33,10 @@ async function finish(code=0){if(finishing)return;finishing=true;if(backend)awai
 async function start(){
   const resources=app.isPackaged?process.resourcesPath:path.join(__dirname,'.cache','stage');
   backend=new Backend({resources,profile:app.getPath('userData'),database:selectedDatabase||undefined,onExit:()=>{if(window&&!window.isDestroyed())window.webContents.send('desktop:backend-ended');}});
-  await backend.start();
+  let backendReady=false;
+  const boot=backend.start();
+  // Keep rejection handled while the loading window is being created.
+  boot.catch(()=>{});
   const isolated=session.fromPartition('persist:writing');
   isolated.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
   isolated.setPermissionCheckHandler(()=>false);
@@ -41,6 +45,8 @@ async function start(){
   await isolated.protocol.handle('novel',async request=>{
     try {
       const route=classify(request.url,request.method);
+      if(!backendReady&&route.path==='/')return new Response('<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>DualQuill · 正在启动</title><style>body{background:#151515;color:#ddd;font:16px system-ui;display:grid;place-content:center;height:90vh}p{color:#aaa}</style><h1>DualQuill</h1><p role="status">正在启动本地写作服务，请稍候…</p></html>',{headers:{'Content-Type':'text/html; charset=utf-8','Content-Security-Policy':CSP,'Cache-Control':'no-store'}});
+      if(!backendReady&&route.kind==='api')return Response.json({error:'本地服务正在启动，请稍候'},{status:503});
       if(route.kind==='asset'){
         const content=await fs.readFile(path.join(resources,'backend','src','novel_writer','ui','static',route.file));
         const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'}[path.extname(route.file)];
@@ -92,6 +98,10 @@ async function start(){
   window.on('closed',()=>{window=null;void finish();});
   await window.loadURL(APP_URL);
   if(!hidden)window.show();
+  await boot;
+  if(finishing||!window||window.isDestroyed())return;
+  backendReady=true;
+  await window.loadURL(APP_URL);
 }
 function status(){return {backendPid:backend?.child?.pid||null,port:backend?.port||null,closeBlocked,packaged:app.isPackaged,hidden};}
 module.exports={status};

@@ -1,4 +1,4 @@
-AI-Novel-Writer desktop 0.4.20
+AI-Novel-Writer desktop 0.4.33
 
 Bundled PDF parser:
 - pypdf 6.10.0: BSD-3-Clause. Copyright remains with the upstream authors.

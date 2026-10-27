@@ -24,7 +24,7 @@ MAX_JSON_NODES = 1_000_000
 _STRING_SPECIAL = re.compile(r'["\\]')
 _PRIMITIVE = re.compile(r'[^ \t\r\n{}\[\]:,"]+')
 _NONSPACE = re.compile(r'[^ \t\r\n]')
-_CONTAINERS = re.compile(r'[{}\[\]]')
+_STRING_OR_CONTAINER = re.compile(r'"[^"\\]*(?:\\[\s\S][^"\\]*)*"|[{}\[\]]|"')
 
 
 def _check_json_resources(text: str) -> None:
@@ -38,20 +38,21 @@ def _check_json_resources(text: str) -> None:
     # A bound above the quota falls back to the original exact node counter.
     upper=(text.count('"')//2+text.count('{')+text.count('[')
            +text.count(':')+text.count(',')+1)
-    if upper<=MAX_JSON_NODES and '\\"' not in text:
-        # With no backslash-quote sequence, every literal quote is unescaped.
-        # Count quote parity between container tokens in C; only actual
-        # containers outside strings affect depth. No value is decoded here.
-        depth=position=0;inside=False
-        for match in _CONTAINERS.finditer(text):
-            inside^=bool(text.count('"',position,match.start())%2)
-            position=match.end()
-            if inside:continue
-            if text[match.start()] in '[{':
+    if upper<=MAX_JSON_NODES:
+        # Consume complete strings, including escapes, in the C regex engine.
+        # Only containers outside strings affect depth; nothing is decoded.
+        # An unmatched quote falls back to the original exact scanner.
+        depth=0
+        for match in _STRING_OR_CONTAINER.finditer(text):
+            character=text[match.start()]
+            if character=='"':
+                if match.end()==match.start()+1:break
+                continue
+            if character in '[{':
                 depth+=1
                 if depth>MAX_JSON_DEPTH:raise DataValidationError(f"JSON 嵌套深度超过 {MAX_JSON_DEPTH} 层限额")
             else:depth=max(0,depth-1)
-        return
+        else:return
     depth = nodes = position = 0
     while match := _NONSPACE.search(text, position):
         character = text[match.start()]

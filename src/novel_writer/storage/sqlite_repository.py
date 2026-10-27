@@ -572,6 +572,7 @@ def _read_project_history(connection, project_id: str, current, cached=None, *, 
 class SQLiteRepository:
     def __init__(self, path: str | Path):
         self._history_cache={}
+        self._history_locks={}
         self._history_lock=threading.RLock()
         self.path = Path(path).resolve()
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -622,14 +623,24 @@ class SQLiteRepository:
         finally:
             connection.close()
 
-    def _history(self,connection,project_id,current,*,mutable=False):
+    def _project_history_lock(self,project_id):
         with self._history_lock:
-            try:state,validator,entry=_read_project_history(connection,project_id,current,self._history_cache.get(project_id),mutable=mutable)
+            return self._history_locks.setdefault(project_id,threading.RLock())
+
+    def _history(self,connection,project_id,current,*,mutable=False):
+        project_lock=self._project_history_lock(project_id)
+        with project_lock:
+            with self._history_lock:
+                cached=self._history_cache.get(project_id)
+            try:state,validator,entry=_read_project_history(connection,project_id,current,cached,mutable=mutable)
             except BaseException:
-                self._history_cache.pop(project_id,None);raise
-            self._history_cache[project_id]=entry
-            # Bound retained validators; no history is removed from disk.
-            while len(self._history_cache)>4:self._history_cache.pop(next(iter(self._history_cache)))
+                with self._history_lock:
+                    self._history_cache.pop(project_id,None)
+                raise
+            with self._history_lock:
+                self._history_cache[project_id]=entry
+                # Bound retained validators; no history is removed from disk.
+                while len(self._history_cache)>4:self._history_cache.pop(next(iter(self._history_cache)))
             return state,validator
 
     def blob(self,sha):
@@ -732,12 +743,14 @@ class SQLiteRepository:
     def _remember_commit(self,project_id,state,validator,payload,saved_at):
         # Called only AFTER the transaction context committed successfully.
         # Future reads still hash every on-disk snapshot before trusting this.
-        private=deepcopy(validator)
-        signatures=list(validator.snapshot_signatures)+[(state['revision'],saved_at,sha256(payload.encode('utf-8')).digest())]
-        private.snapshot_signatures=signatures
-        with self._history_lock:
-            self._history_cache[project_id]=dict(signatures=signatures,validator=private,raw=private.previous_normalized_state)
-            while len(self._history_cache)>4:self._history_cache.pop(next(iter(self._history_cache)))
+        project_lock=self._project_history_lock(project_id)
+        with project_lock:
+            private=deepcopy(validator)
+            signatures=list(validator.snapshot_signatures)+[(state['revision'],saved_at,sha256(payload.encode('utf-8')).digest())]
+            private.snapshot_signatures=signatures
+            with self._history_lock:
+                self._history_cache[project_id]=dict(signatures=signatures,validator=private,raw=private.previous_normalized_state)
+                while len(self._history_cache)>4:self._history_cache.pop(next(iter(self._history_cache)))
 
     def atomic(self,project_id,operation,*,identity_claim=None,blobs=(),return_workspace=False):
         """最新状态上的单锁业务变更；正文、事件和收据一起提交或回滚。"""

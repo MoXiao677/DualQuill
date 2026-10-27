@@ -20,7 +20,7 @@ const ASSETS = new Map(Object.entries({
   '/styles.js':'styles.js',
   '/public_search.js':'public_search.js',
   '/style_trials.js':'style_trials.js',
-  '/chapter_writing.js':'chapter_writing.js',
+  '/chapter_writing.js':'chapter_writing.js','/annotations.js':'annotations.js',
   '/writing_candidates.js':'writing_candidates.js',
   '/chapter_planning.js':'chapter_planning.js',
   '/model_planning.js':'model_planning.js',

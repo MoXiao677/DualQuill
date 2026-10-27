@@ -110,6 +110,8 @@ class LocalServer(ThreadingHTTPServer):
         self.token = secrets.token_urlsafe(32)
         from novel_writer.application.chat_agent import ChatAgent
         self.chat_agent = ChatAgent(self)
+        from novel_writer.application.annotations import Annotations
+        self.annotations = Annotations(self)
         super().__init__(("127.0.0.1", port), Handler)
         # 仅在明确备份操作时加载和创建传输暂存区。
         self._backups = None
@@ -148,6 +150,7 @@ class LocalServer(ThreadingHTTPServer):
                 backups.close()
             self.console_background.close()
             self.chat_agent.close()
+            self.annotations.close()
             self.workflows.close()
             self.task_coordinator.close()
 
@@ -275,6 +278,8 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(200, {"token": self.server.token})
             elif path == '/api/settings/chat':
                 self.send_json(200, self.server.chat_agent.settings())
+            elif path == '/api/settings/chat/activity':
+                self.send_json(200, self.server.chat_agent.activity())
             elif path.startswith('/api/settings/chat/attachments/') and len(path.strip('/').split('/')) == 5:
                 project_id = path.rsplit('/', 1)[-1]
                 project_id = None if project_id == 'unbound' else project_id
@@ -301,6 +306,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(body)
             elif path == '/api/settings/chat/jobs':
                 self.send_json(200, self.server.chat_agent.listing(None))
+            elif path.startswith('/api/settings/chat/view/') and len(path.strip('/').split('/')) == 6:
+                parts = path.strip('/').split('/')
+                self.send_json(200, self.server.chat_agent.chat_view(parts[4], parts[5]))
             elif path.startswith('/api/settings/chat/jobs/') and len(path.strip('/').split('/')) == 5:
                 self.send_json(200, self.server.chat_agent.status(path.rsplit('/', 1)[-1]))
             elif path.startswith('/api/projects/') and path.endswith('/drafts') and len(path.strip('/').split('/'))==4:
@@ -368,6 +376,9 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(200, self.server.skills.get(path.split("/")[-1]))
             elif path.startswith("/api/projects/"):
                 preset_parts=path.strip('/').split('/')
+                if len(preset_parts) in (4,5) and preset_parts[3]=='annotations':
+                    engine=self.server.annotations
+                    self.send_json(200,engine.listing(preset_parts[2]) if len(preset_parts)==4 else engine.describe(preset_parts[2],preset_parts[4]));return
                 if len(preset_parts) in (4,6) and preset_parts[3]=='author-scope':
                     from novel_writer.application.author_scope import describe,preview
                     state=service.get(preset_parts[2])
@@ -402,7 +413,7 @@ class Handler(BaseHTTPRequestHandler):
                 if len(preset_parts) in (4,5) and preset_parts[3]=='chapter-planning':self.send_json(200,self.server.chapter_planning.describe(preset_parts[2],preset_parts[4] if len(preset_parts)==5 else None));return
                 if len(preset_parts) in (4,5) and preset_parts[3]=='model-planning':self.send_json(200,self.server.model_planning.describe(preset_parts[2],preset_parts[4] if len(preset_parts)==5 else None));return
                 if len(preset_parts) in (4,5) and preset_parts[3]=='scene-expansion':self.send_json(200,self.server.scene_expansion.describe(preset_parts[2],preset_parts[4] if len(preset_parts)==5 else None));return
-                if len(preset_parts)==4 and preset_parts[3]=='console':self.send_json(200,self.server.console.list(preset_parts[2]));return
+                if len(preset_parts)==4 and preset_parts[3]=='console':self.send_json(200,self.server.chat_agent.session_listing(preset_parts[2]));return
                 if len(preset_parts)==6 and preset_parts[3]=='console' and preset_parts[4]=='sessions':self.send_json(200,dict(self.server.console.describe(preset_parts[2],preset_parts[5]),dialogue=self.server.dialogue.describe(preset_parts[2],preset_parts[5])));return
                 if len(preset_parts)==5 and preset_parts[3]=='console' and preset_parts[4]=='runs':
                     query=parse_qs(urlsplit(self.path).query);self.send_json(200,self.server.console.list_runs(preset_parts[2],query.get('session_id',[None])[0]));return
@@ -525,6 +536,7 @@ class Handler(BaseHTTPRequestHandler):
                           "/public_search.js": ("public_search.js", "text/javascript"),
                           "/style_trials.js": ("style_trials.js", "text/javascript"),
                           "/chapter_writing.js": ("chapter_writing.js", "text/javascript"),
+                          "/annotations.js": ("annotations.js", "text/javascript"),
                           "/chapter_planning.js": ("chapter_planning.js", "text/javascript"),
                           "/model_planning.js": ("model_planning.js", "text/javascript"),
                           "/scene_expansion.js": ("scene_expansion.js", "text/javascript"),
@@ -592,6 +604,9 @@ class Handler(BaseHTTPRequestHandler):
             if type(payload) is not dict:
                 raise ValueError("提交内容必须是对象")
             path = urlsplit(self.path).path
+            if path == '/api/settings/chat/session-lifecycle':
+                self.send_json(200, self.server.chat_agent.session_lifecycle(payload))
+                return
             if path == '/api/settings/chat/attachment/local-path':
                 if set(payload) != {'path', 'project_id', 'operation_id'}:
                     raise ValueError('本地路径导入字段无效')
@@ -688,6 +703,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(201, self.server.skills.import_files(payload["files"]))
                 return
             parts = path.strip("/").split("/")
+            if len(parts) in (4,6) and parts[:2]==['api','projects'] and parts[3]=='annotations':
+                engine=self.server.annotations
+                if len(parts)==4:self.send_json(201,engine.create(parts[2],payload))
+                else:self.send_json(202 if parts[5] in ('generate','review') else 200,engine.act(parts[2],parts[4],parts[5],payload))
+                return
             if len(parts)==5 and parts[:2]==['api','projects'] and parts[3]=='import' and parts[4]=='preview':
                 from novel_writer.application.migration_text import preview
                 if set(payload)!={'filename','content_base64','encoding'}:raise ValueError('导入预览字段不完整或含未知字段')
@@ -792,9 +812,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json(201,self.server.dialogue.prepare(parts[2],payload));return
             if len(parts)>=5 and parts[:2]==['api','projects'] and parts[3]=='console':
                 engine=self.server.console
+                if payload.get('session_id') and self.server.chat_agent.session_deleted(parts[2], payload['session_id']):
+                    raise ValueError('此会话已删除，请先恢复')
                 if len(parts)==5 and parts[4]=='sessions':self.send_json(201,engine.create(parts[2],payload));return
                 if len(parts)==5 and parts[4]=='runs':self.send_json(201,engine.start(parts[2],payload));return
                 if len(parts)==7 and parts[4]=='sessions':
+                    if self.server.chat_agent.session_deleted(parts[2], parts[5]):
+                        raise ValueError('此会话已删除，请先恢复')
                     method={'rename':engine.rename,'archive':engine.archive,'messages':engine.append_message,'plan':engine.save_plan,'dispatch':engine.dispatch,'proposal-preview':engine.preview_plan,'candidate-plan':engine.candidate_plan}.get(parts[6])
                     if method is None:raise KeyError('console route')
                     self.send_json(201 if parts[6] in ('messages',) else 200,method(parts[2],dict(payload,session_id=parts[5])));return

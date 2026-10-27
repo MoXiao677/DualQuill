@@ -170,7 +170,10 @@ class ConsoleRunAssetTests(unittest.TestCase):
         for token in ('console-run-start','console-run-list','console-run-detail','console-run-advance','console-run-pause','console-run-resume','console-run-cancel','console-run-skip','console-run-blocked','expected_revision:runDetail.revision','payload.step_id=current.current_step_id','awaiting_confirmation'):
             self.assertIn(token,console)
         app=(base/'app.js').read_text(encoding='utf-8')
-        self.assertIn("api(base+'/runs')",app)
+        # The main chat view now delegates to the automatic chat workspace.
+        # Legacy console controls remain covered above; it no longer fetches
+        # every historical console run during chat navigation.
+        self.assertIn('html=await renderAgentChat(workspace)',app)
         self.assertNotIn('/runs?session_id=',app)
 
 

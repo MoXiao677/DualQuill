@@ -1,6 +1,7 @@
 """V25 explicit TXT/Markdown materials with append-only versions and literal chunks."""
 from dataclasses import dataclass
 from typing import Literal
+import re
 
 from novel_writer.domain.models import _timestamp
 from novel_writer.domain.tasks import check_types,digest,parse,require,uuid_value
@@ -12,10 +13,12 @@ CHUNK_OVERLAP=120
 MAX_TEXT_CHARS=4_000_000
 MAX_TAGS=20
 MAX_TAG_CHARS=40
+_CONTROL = re.compile(r'[\x00-\x1f\x7f]')
+_TEXT_CONTROL = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]')
 
 
 def _control(value):
-    return any(ord(char)<32 or ord(char)==127 for char in value)
+    return _CONTROL.search(value) is not None
 
 
 def chunk_ranges(length):
@@ -73,7 +76,7 @@ class MaterialVersion(Value):
     def __post_init__(self):
         super().__post_init__();uuid_value(self.material_id)
         require(type(self.version_number) is int and self.version_number>=1 and type(self.text) is str and 0<len(self.text)<=MAX_TEXT_CHARS and bool(self.text.strip()),'materials.invalid_version')
-        require(not any(ord(char)==0 or (ord(char)<32 and char not in '\n\r\t') or ord(char)==127 for char in self.text),'materials.invalid_text')
+        require(_TEXT_CONTROL.search(self.text) is None,'materials.invalid_text')
         require(self.text_sha256==digest(self.text),'materials.invalid_text_hash')
         require(type(self.note) is str and len(self.note)<=1000 and '\x00' not in self.note,'materials.invalid_note')
         if self.previous_version_id is not None:uuid_value(self.previous_version_id)

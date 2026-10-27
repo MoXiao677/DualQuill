@@ -24,7 +24,7 @@
     </div>
   </header>
   <section id="workbench-status" class="workbench-status" popover aria-label="工作台状态">
-    <h2>工作台状态</h2><dl><dt>当前小说</dt><dd id="overview-project">未绑定小说</dd><dt>保存</dt><dd id="overview-save">尚未选择小说</dd><dt>资料</dt><dd id="overview-chapters">0 章 · 0 位人物</dd><dt>模型</dt><dd id="overview-model">模型未启用</dd><dt>任务</dt><dd id="overview-task">无运行任务</dd><dt>费用 / Token</dt><dd>总费用未汇总；各任务列出实际或未知用量</dd></dl>
+    <h2>工作台状态</h2><dl><dt>当前小说</dt><dd id="overview-project">未绑定小说</dd><dt>保存</dt><dd id="overview-save">尚未选择小说</dd><dt>资料</dt><dd id="overview-chapters">0 章 · 0 位人物</dd><dt>模型</dt><dd id="overview-model">模型未启用</dd><dt>任务</dt><dd id="overview-task">无运行任务</dd></dl>
   </section>
   <div id="workbench" class="workbench">
     <nav id="tabs" class="activity-bar" aria-label="活动导航"></nav>
@@ -48,13 +48,13 @@
       <section id="draft-review" class="draft-review" hidden></section>
       <div id="find-bar" class="find-bar" hidden><label for="find-input">正文查找</label><input id="find-input" type="search"><button id="find-next" type="button">下一个</button><span id="find-result"></span><button id="close-find" type="button" aria-label="关闭查找">×</button></div>
       <div id="editor-toolbar" class="editor-toolbar" hidden></div>
-      <section id="content" class="content" aria-label="创作内容" tabindex="-1"><p>正在打开工作台…</p></section>
+      <section id="content" class="content" aria-label="创作内容" tabindex="-1"><p role="status">正在读取并校验本地小说与历史记录；资料较多时首次打开需要一些时间…</p></section>
       <form id="chat-composer" class="chat-composer" aria-label="创作需求输入区" hidden>
-        <div class="composer-scope"><div id="chat-context-summary" class="chat-context-summary" aria-live="polite"></div><button id="switch-prompt-scope" type="button" hidden>查看未绑定需求</button><button id="clear-chat-prompt" aria-label="清空当前需求" type="button" disabled>清空</button></div>
+        <div class="composer-scope"><div id="chat-context-summary" class="chat-context-summary" aria-live="polite"></div><button id="switch-prompt-scope" type="button" hidden>查看未绑定需求</button><button id="clear-chat-prompt" aria-label="清空当前需求" type="button" disabled>清空输入</button><button id="chat-new-session" type="button" title="为当前小说创建新的空 CHAT 会话；保留旧聊天和小说数据，不发送付费请求">清屏 / 新会话</button></div>
         <div class="composer-surface">
           <label class="sr-only" for="chat-input">创作需求</label>
-          <textarea id="chat-input" rows="3" placeholder="描述你的剧情构思、写作要求或修改意见…" aria-describedby="chat-availability chat-storage-note chat-keyboard-hint"></textarea><div class="chat-local-path"><input id="chat-local-path-input" type="text" placeholder="可选：输入本地文件或文件夹绝对路径"><button id="chat-local-path" type="button">导入本地路径</button></div>
-          <div class="composer-tools"><button id="add-chat-context" aria-label="添加上下文" type="button" hidden>添加上下文</button><button id="chat-model" type="button" aria-label="模型配置入口">API 设置 <span aria-hidden="true">⌄</span></button><span id="chat-keyboard-hint" class="composer-shortcut">Enter发送 · Shift+Enter换行</span><button id="chat-stop" aria-label="停止生成" type="button" disabled title="停止当前创作，已保存内容保留">■</button><button id="chat-send" aria-label="发送创作需求" type="submit" title="发送并自动更新小说">↑</button></div>
+          <textarea id="chat-input" rows="3" placeholder="描述你的剧情构思、写作要求或修改意见…" aria-describedby="chat-availability chat-storage-note chat-keyboard-hint"></textarea><details class="chat-local-path"><summary>导入本地路径</summary><div><label class="sr-only" for="chat-local-path-input">本地文件或文件夹绝对路径</label><input id="chat-local-path-input" type="text" placeholder="可选：输入本地文件或文件夹绝对路径"><button id="chat-local-path" type="button">导入</button></div></details>
+          <div class="composer-tools"><button id="add-chat-context" aria-label="添加上下文" type="button" hidden>添加上下文</button><button id="chat-model" type="button" aria-label="模型配置入口">API 设置 <span aria-hidden="true">⌄</span></button><span id="chat-keyboard-hint" class="composer-shortcut">Enter发送 · Shift+Enter换行</span><button id="chat-stop" aria-label="停止生成" type="button" disabled title="停止当前创作，已保存内容保留">停止</button><button id="chat-send" aria-label="发送创作需求" type="submit" title="发送并自动更新小说">↑</button></div>
         </div>
         <div class="composer-note"><span id="chat-availability">通过聊天创作，资料与正文自动保存</span><span id="chat-storage-note">已发送对话保存在本机；未发送输入请先留存</span></div>
       </form>
