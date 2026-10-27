@@ -55,7 +55,9 @@ class DesktopBootstrapTests(unittest.TestCase):
         self.assertEqual(self.request('GET','/api/projects',origin='novel://app')[0],403)
         self.assertEqual(self.request('GET','/api/projects',host='evil.test')[0],403)
         self.assertEqual(self.request('GET','/api/session')[0],404)
-    def test_manual_default_explicit_session_enable_and_disable_without_credentials(self):
+    def test_configured_desktop_default_and_explicit_session_disable_enable(self):
+        self.assertTrue(self.request('GET','/api/tasks/capabilities')[1]['real_model_enabled'])
+        self.assertEqual(self.request('POST','/api/desktop/mode',dict(mode='manual',confirmed=True))[0],200)
         self.assertFalse(self.request('GET','/api/tasks/capabilities')[1]['real_model_enabled'])
         self.assertEqual(self.request('POST','/api/desktop/mode',dict(mode='models',confirmed=False))[0],422)
         self.assertEqual(self.request('POST','/api/desktop/mode',dict(mode='models',confirmed=True,command='x'))[0],422)
@@ -70,6 +72,7 @@ class DesktopBootstrapTests(unittest.TestCase):
         with self.assertRaises(OSError):connection.request('GET','/api/projects')
         connection.close()
     def test_manual_configuration_saves_without_enabling_requests_or_loading_keys_on_status(self):
+        self.assertEqual(self.request('POST','/api/desktop/mode',dict(mode='manual',confirmed=True))[0],200)
         identifier=str(uuid4())
         payload=dict(id=identifier,name='作者配置 保存/取消',base_url='http://127.0.0.1:19991/v1',protocol='openai-chat',model_id='fiction-manual-model',api_key='fiction-manual-secret',allow_local=True)
         status,result=self.request('POST','/api/providers/custom',payload)
