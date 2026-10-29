@@ -1078,10 +1078,8 @@ class ChatAgent:
                     raise ValueError('模型输出未完整结束，未采纳截断内容')
                 result = ''.join(p['text'] for item in data.get('output', []) if item.get('type') == 'message' for p in item.get('content', []) if p.get('type') == 'output_text')
             elif protocol == 'openai-chat':
-                choice = data['choices'][0]
-                if choice.get('finish_reason') != 'stop' or choice['message'].get('tool_calls'):
-                    raise ValueError('模型输出未完整结束或返回了未授权工具')
-                result = choice['message']['content']
+                from novel_writer.application.chat_completion import chat_completion_text
+                result = chat_completion_text(data)
             elif protocol == 'anthropic-messages':
                 if data.get('stop_reason') not in ('end_turn', 'stop_sequence'):
                     raise ValueError('模型输出未完整结束')
