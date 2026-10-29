@@ -9,8 +9,8 @@
 <h1 align="center">DualQuill</h1>
 
 <p align="center">
-  <strong>面向百万字长篇创作的 AI 多模型协同小说工作台</strong><br>
-  <em>多模型流水线协同 × 全景设定矩阵 × 逻辑与时间线强质检 · 告别断层与崩坏</em>
+  <strong>通过聊天管理设定、写作和审核的小说工作台</strong><br>
+  <em>写作与审核分别配置，正文和修改历史保存在本机</em>
 </p>
 
 <p align="center">
@@ -23,14 +23,24 @@
 
 ---
 
-## 0.4.20：配置自己的 API 后通过聊天创作
+## 当前发布：0.4.33 · 2026-10-29 修订版
 
-Windows 下载：[最新版本](https://github.com/MoXiao677/DualQuill/releases/latest)。解压免安装 ZIP 后运行 `DualQuill.exe`，或使用安装器。
+Windows 下载：[0.4.33 修订版](https://github.com/MoXiao677/DualQuill/releases/tag/v0.4.33-20261029) · [所有版本](https://github.com/MoXiao677/DualQuill/releases)。本次发布标签为 `v0.4.33-20261029`，软件内部版本仍为 `0.4.33`。
+
+- `DualQuill.Setup.0.4.33.exe`：Windows 安装器。
+- `DualQuill-0.4.33-win.zip`：免安装包，解压后运行 `DualQuill.exe`。
+- `DualQuill-source.zip`：发布时的完整源码。
+- `DualQuill-history.bundle`：完整 Git 历史备份。
+- `RESTORE.md`、`release-manifest.json`、`SHA256SUMS.txt`：恢复说明、文件清单和下载校验值。
+
+本次补充模型响应错误原因，帮助区分输出截断与未授权工具调用；不接受截断正文。恢复和重新构建见[恢复说明](docs/restore-from-github-20261029.md)。小说、私人资料库和 API 密钥不包含在 GitHub 发布中，清理本地前须另行备份。
+
+### 配置自己的 API 后通过聊天创作
 
 1. 打开“模型 / API 中心”，填写自己的 Base URL、API Key 和完整模型 ID，保存写作连接。
 2. 添加另一条审核连接，在“独立审核”中选择并保存；名称可自定义，不需要作者使用的供应商。自动生成正文前需要配置独立审核。
 3. 创建自己的小说，在创作对话中输入想法，上传大纲或导入本地文件路径，要求助手分类保存。
-4. 直接要求规划、写章或修改设定。正文先保存，再独立审核；严重问题最多自动修订两次，失败会停止并保留记录。
+4. 直接要求规划、写章或修改设定。正文先保存，再独立审核；同一任务每章最多自动保存5次修订；达到次数后按作者规则放行并继续维护资料，该状态不等于独立审核通过。不可重试的连接错误会停止并保留进度。
 5. 导出支持整本、分卷和单章；每次修改保留历史版本。
 
 API 不随软件附送，调用按用户自己的服务计费。服务需要支持兼容 API 和结构化 JSON 输出；不是任意 API 都保证兼容。无需填写作者的连接名称、密钥或小说路径。
@@ -99,13 +109,16 @@ tests/               # 1300+ 项 Python 测试 + Node 端到端
 
 - [架构说明](ARCHITECTURE.md) · [产品需求](PRODUCT_REQUIREMENTS.md) · [路线图](ROADMAP.md)
 - [开发任务与验收清单](TASKS.md) · [变更记录](CHANGELOG.md)
-- [0.4.15 收尾记录](docs/final-local-0.4.15.md)（含全部测试数字与未验边界）
+- [本次恢复与构建说明](docs/restore-from-github-20261029.md) · [响应诊断修订](docs/response-diagnostics-20261029.md)
+- [0.4.15 历史收尾记录](docs/final-local-0.4.15.md)（含全部测试数字与未验边界）
 
 ---
 
 ## 📌 状态与边界
 
-当前版本 **0.4.20**。本版通过 Python/JavaScript 语法检查和 Windows 打包检查；历史版本的测试数字不代表本版全量回归结果。
+当前发布为 **0.4.33 的 2026-10-29 修订版**。本次22项响应诊断及后台任务测试通过，Windows 安装包与便携包构建成功，269个打包资源已核对，并在独立空资料库完成启动检查；GitHub 重新克隆的源码内容已核对。上传文件的服务器 SHA-256 与本地一致，大文件整包回下载复核未完成。
+
+GitHub 自动检查当前有一项失败：`delivery-node`（打包交付相关检查），正在定位；不能将本次局部测试通过视为全部检查通过。[查看该次检查](https://github.com/MoXiao677/DualQuill/actions/runs/40894535500)。本次未重跑全量测试，历史测试数字不代表本次结果。
 
 已知边界（不粉饰）：
 
