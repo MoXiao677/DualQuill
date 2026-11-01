@@ -56,7 +56,7 @@ test('staged files must match source binding and reject traversal or corruption'
 });
 test('NSIS local defaults prevent auto-run, machine install, signing and publishing',t=>{
   const project=fixture(t);
-  for(const [section,key,value] of [['nsis','runAfterFinish',true],['nsis','perMachine',true],['win','signAndEditExecutable',true]]){
+  for(const [section,key,value] of [['nsis','runAfterFinish',true],['nsis','perMachine',true],['win','signExecutable',true]]){
     const copy=fixture(t);change(copy,'desktop/package.json',x=>x.build[section][key]=value);assert.throws(()=>contract.inventory(copy));
   }
   change(project,'desktop/package.json',x=>x.build.publish='github');assert.throws(()=>contract.inventory(project));
