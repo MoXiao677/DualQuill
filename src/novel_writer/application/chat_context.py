@@ -8,12 +8,12 @@ from novel_writer.domain.memory import outdated, effective_position, capture_sou
 from novel_writer.domain.models import DataValidationError
 from novel_writer.application import scoped_rules
 
-LIMIT = 360000
+LIMIT = 1048576
 
 
 def checked_context(value):
     if len(json.dumps(value, ensure_ascii=False)) > LIMIT:
-        raise ValueError('所需完整上下文超过360000字符；请缩小任务范围或整理资料。没有截断正文、世界观或写作规则，未发送模型请求')
+        raise ValueError('所需完整上下文超过1048576字符；请缩小任务范围或整理资料。没有截断正文、世界观或写作规则，未发送模型请求')
     return value
 
 

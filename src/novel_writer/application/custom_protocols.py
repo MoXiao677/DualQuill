@@ -27,6 +27,16 @@ PROTOCOLS={
 
 def validate_endpoint(value,*,allow_local=False):return checked_endpoint(value,allow_local=allow_local)
 
+LOCAL_DNS_OVERRIDES = __import__("pathlib").Path(__file__).with_name("local_dns_overrides.json")
+
+def _resolution_host(hostname):
+    if not LOCAL_DNS_OVERRIDES.exists():return hostname
+    overrides=json.loads(LOCAL_DNS_OVERRIDES.read_text(encoding="utf-8"))
+    target=overrides.get(hostname.lower())
+    if target is None:return hostname
+    require(type(target) is str and ipaddress.ip_address(target).is_global,"Local DNS override must use a public IP address")
+    return target
+
 def connection_for(saved,timeout,*,token=None,_url_validator=None,_resolver=None,_connector=None):
     deadline=min(time.monotonic()+timeout,token.deadline) if token is not None else time.monotonic()+timeout
     def remaining():
@@ -38,7 +48,7 @@ def connection_for(saved,timeout,*,token=None,_url_validator=None,_resolver=None
     port=parsed.port or (443 if parsed.scheme=='https' else 80)
     result=[];finished=threading.Event()
     def resolve():
-        try:result.append((_resolver or socket.getaddrinfo)(parsed.hostname,port,type=socket.SOCK_STREAM))
+        try:result.append((_resolver or socket.getaddrinfo)(parsed.hostname if _resolver else _resolution_host(parsed.hostname),port,type=socket.SOCK_STREAM))
         except OSError:result.append(None)
         finally:finished.set()
     threading.Thread(target=resolve,daemon=True).start()
